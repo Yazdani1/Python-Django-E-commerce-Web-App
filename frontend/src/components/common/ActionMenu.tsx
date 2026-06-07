@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
 import { useState } from "react";
 import {
   Divider,
@@ -15,11 +15,18 @@ import {
   MoreVert as MoreVertIcon,
 } from "@mui/icons-material";
 
+interface ExtraMenuItem {
+  label: string;
+  icon: ReactNode;
+  onClick: () => void;
+}
+
 interface ActionMenuProps {
   onEdit?: () => void;
   onDelete?: () => void;
   editLabel?: string;
   deleteLabel?: string;
+  extraItems?: ExtraMenuItem[];
 }
 
 export const ActionMenu: FC<ActionMenuProps> = ({
@@ -27,6 +34,7 @@ export const ActionMenu: FC<ActionMenuProps> = ({
   onDelete,
   editLabel = "Edit",
   deleteLabel = "Delete",
+  extraItems = [],
 }) => {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
 
@@ -74,7 +82,17 @@ export const ActionMenu: FC<ActionMenuProps> = ({
           </MenuItem>
         )}
 
-        {onEdit && onDelete && <Divider />}
+        {extraItems.map((item) => (
+          <MenuItem
+            key={item.label}
+            onClick={() => { handleClose(); item.onClick(); }}
+          >
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <Typography variant="body2">{item.label}</Typography>
+          </MenuItem>
+        ))}
+
+        {(onEdit || extraItems.length > 0) && onDelete && <Divider />}
 
         {onDelete && (
           <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>

@@ -20,7 +20,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Inventory2 as InventoryIcon } from "@mui/icons-material";
+import {
+  Inventory2 as InventoryIcon,
+  LocalOffer as LabelIcon,
+} from "@mui/icons-material";
 import {
   ActionMenu,
   AlertMessage,
@@ -29,6 +32,7 @@ import {
   ConfirmModal,
 } from "@/components/common";
 import { ProductFormModal } from "@/components/products/ProductFormModal";
+import { SkuLabelModal } from "@/components/products/SkuLabelModal";
 import { useApi } from "@/hooks/useApi";
 import { productApi } from "@/api/productApi";
 import { categoryApi } from "@/api/categoryApi";
@@ -55,6 +59,7 @@ const ProductsPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Product | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [printTarget, setPrintTarget] = useState<Product | null>(null);
 
   // Filter state — init from URL params
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
@@ -289,7 +294,17 @@ const ProductsPage = () => {
                 </TableCell>
                 {isAdmin && (
                   <TableCell align="right">
-                    <ActionMenu onEdit={() => handleEdit(p)} onDelete={() => setDeleteTarget(p)} />
+                    <ActionMenu
+                      onEdit={() => handleEdit(p)}
+                      onDelete={() => setDeleteTarget(p)}
+                      extraItems={[
+                        {
+                          label: "Print SKU Labels",
+                          icon: <LabelIcon fontSize="small" color="action" />,
+                          onClick: () => setPrintTarget(p),
+                        },
+                      ]}
+                    />
                   </TableCell>
                 )}
               </TableRow>
@@ -299,6 +314,12 @@ const ProductsPage = () => {
       </TableContainer>
 
       <ProductFormModal open={formOpen} onClose={handleFormClose} onSaved={load} product={editTarget} />
+
+      <SkuLabelModal
+        product={printTarget}
+        open={Boolean(printTarget)}
+        onClose={() => setPrintTarget(null)}
+      />
 
       <ConfirmModal
         open={Boolean(deleteTarget)}
