@@ -1,17 +1,9 @@
-/**
- * Thin wrapper around MUI TextField.
- * Standardises size, variant, and fullWidth defaults so every
- * form in the app looks identical without repeating props.
- */
-import { TextField, TextFieldProps } from "@mui/material";
+import type { FC } from "react";
+import { TextField } from "@mui/material";
+import type { TextFieldProps } from "@mui/material";
 
-export function AppTextField(props: TextFieldProps) {
-  return (
-    <TextField
-      fullWidth
-      size="small"
-      variant="outlined"
-      {...props}
-    />
-  );
-}
+type AppTextFieldProps = TextFieldProps;
+
+export const AppTextField: FC<AppTextFieldProps> = (props) => (
+  <TextField fullWidth size="small" variant="outlined" {...props} />
+);

@@ -1,52 +1,56 @@
-import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
-import { Logout as LogoutIcon } from "@mui/icons-material";
-import { AppButton, LoadingSpinner } from "@/components/common";
+import { Box, Card, Grid, Typography } from "@mui/material";
+import { Person as PersonIcon, Lock as LockIcon } from "@mui/icons-material";
+import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { LoadingSpinner } from "@/components/common";
+import { ROUTES } from "@/constants";
 
-export default function DashboardPage() {
-  const { user, logout, isLoading } = useAuth();
+const quickLinks = [
+  { label: "My Profile", to: ROUTES.PROFILE, icon: <PersonIcon /> },
+  { label: "Change Password", to: ROUTES.CHANGE_PASSWORD, icon: <LockIcon /> },
+];
 
-  if (!user) return <LoadingSpinner fullPage message="Loading profile…" />;
+const DashboardPage = () => {
+  const { user } = useAuth();
+
+  if (!user) return <LoadingSpinner message="Loading…" />;
 
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      minHeight="100vh"
-      bgcolor="background.default"
-      px={2}
-    >
-      <Card sx={{ width: "100%", maxWidth: 480 }}>
-        <CardContent sx={{ p: 4 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h5">Dashboard</Typography>
-            <AppButton
-              variant="outlined"
-              color="error"
-              size="small"
-              startIcon={<LogoutIcon />}
-              loading={isLoading}
-              onClick={logout}
+    <Box>
+      <Typography variant="h5" mb={1}>
+        Welcome back, {user.full_name || user.email}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" mb={4}>
+        {user.email}
+      </Typography>
+
+      <Grid container spacing={2}>
+        {quickLinks.map(({ label, to, icon }) => (
+          <Grid item xs={12} sm={6} md={4} key={to}>
+            <Card
+              component={RouterLink}
+              to={to}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                p: 2.5,
+                textDecoration: "none",
+                color: "inherit",
+                "&:hover": { bgcolor: "action.hover" },
+                transition: "background 0.15s",
+              }}
             >
-              Logout
-            </AppButton>
-          </Stack>
-
-          <Typography variant="body1" gutterBottom>
-            Welcome back, <strong>{user.full_name}</strong>
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {user.email}
-          </Typography>
-
-          <Box mt={4}>
-            <Typography variant="body2" color="text.secondary">
-              Business logic will go here.
-            </Typography>
-          </Box>
-        </CardContent>
-      </Card>
+              <Box color="primary.main">{icon}</Box>
+              <Typography variant="body1" fontWeight={500}>
+                {label}
+              </Typography>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
-}
+};
+
+export default DashboardPage;

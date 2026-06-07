@@ -1,12 +1,26 @@
 """
 Custom User model — always define this before the first migration.
 Uses email as the primary login identifier instead of username.
+
+AbstractBaseUser (not AbstractUser) is intentional: AbstractUser forces a
+username field we don't want. AbstractBaseUser gives us a clean slate while
+PermissionsMixin adds Django's group/permission system.
 """
 
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
+from django.core.validators import RegexValidator
 from django.db import models
 
 from apps.core.models import TimeStampedModel
+
+_phone_regex = RegexValidator(
+    regex=r"^(\+?[\d\s\-().]{7,20})?$",
+    message="Enter a valid phone number (7–20 digits, optional + prefix).",
+)
 
 
 class UserManager(BaseUserManager):
@@ -29,14 +43,15 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
-    """
-    Project-wide User model.
-    AUTH_USER_MODEL = "users.User" is set in base settings.
-    """
-
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+        validators=[_phone_regex],
+    )
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

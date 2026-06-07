@@ -7,21 +7,52 @@ from .models import User
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ["-created_at"]
-    list_display = ["email", "first_name", "last_name", "is_staff", "is_active"]
+    list_display = [
+        "email",
+        "first_name",
+        "last_name",
+        "phone_number",
+        "is_staff",
+        "is_active",
+    ]
     list_filter = ["is_staff", "is_active"]
-    search_fields = ["email", "first_name", "last_name"]
+    search_fields = ["email", "first_name", "last_name", "phone_number"]
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal Info", {"fields": ("first_name", "last_name")}),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
+        (
+            "Personal Info",
+            {"fields": ("first_name", "last_name", "phone_number")},
+        ),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
+        ),
         ("Dates", {"fields": ("last_login", "created_at", "updated_at")}),
     )
     readonly_fields = ["created_at", "updated_at", "last_login"]
 
     add_fieldsets = (
-        (None, {
-            "classes": ("wide",),
-            "fields": ("email", "password1", "password2", "first_name", "last_name"),
-        }),
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "phone_number",
+                    "password1",
+                    "password2",
+                    "first_name",
+                    "last_name",
+                ),
+            },
+        ),
     )

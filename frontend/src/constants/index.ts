@@ -6,6 +6,7 @@ export const ROUTES = {
   REGISTER: "/register",
   DASHBOARD: "/dashboard",
   PROFILE: "/profile",
+  CHANGE_PASSWORD: "/change-password",
 } as const;
 
 export const TOKEN_KEYS = {

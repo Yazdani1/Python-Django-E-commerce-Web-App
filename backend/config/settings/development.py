@@ -39,7 +39,7 @@ LOGGING = {
     "loggers": {
         "django.db.backends": {
             "handlers": ["console"],
-            "level": "DEBUG",   # shows SQL queries
+            "level": "DEBUG",  # shows SQL queries
             "propagate": False,
         },
     },
