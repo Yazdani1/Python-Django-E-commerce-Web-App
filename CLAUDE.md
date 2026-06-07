@@ -79,6 +79,8 @@ These rules apply to every file, every session, every suggestion.
 - Use `SerializerMethodField` sparingly — prefer computed model properties where possible.
 - Group related endpoints under a `ViewSet` when CRUD is involved.
 - All responses must use the shared envelope: `{ success, message, data }` via `SuccessResponseMixin`.
+- Raise domain errors using `AppError(message, status_code)` — the global `custom_exception_handler` in `apps/core/exceptions.py` catches it; never return raw `Response(status=...)` for error cases in view logic.
+- Wrap every async-capable view utility with the project's `asyncHandler` equivalent — for sync DRF views this means always using `raise_exception=True` on serializers instead of manual `if not valid` branching.
 
 ---
 
@@ -143,6 +145,32 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 **UI library (fixed): Material UI v6 + TypeScript — do not use raw HTML elements where an MUI component exists.**
 
+### Component typing rules (strictly enforced)
+
+- **Components with props** — declare a named `interface` and annotate with `FC<InterfaceName>`. Never use inline prop types.
+  ```tsx
+  import { FC } from "react";
+
+  interface ProductCardProps {
+    title: string;
+    price: number;
+  }
+
+  export const ProductCard: FC<ProductCardProps> = ({ title, price }) => {
+    // ...
+  };
+  ```
+
+- **Components with no props** — use a plain arrow function. Do **not** annotate with bare `FC` (it adds an implicit `children` prop and obscures intent).
+  ```tsx
+  export const LoadingSpinner = () => {
+    // ...
+  };
+  ```
+
+- Interface names must match the component name + `Props` suffix: `ButtonProps`, `CartItemProps`, etc.
+- Never use `React.FC` — always import and use `FC` directly from `"react"`.
+
 ### Component rules
 - Use MUI components as the primary building blocks: `Box`, `Stack`, `Typography`, `Button`, `TextField`, `Card`, etc.
 - Wrap MUI primitives in thin project-specific components when adding shared defaults (see `AppButton`, `AppTextField`).
@@ -160,12 +188,28 @@ class UserFactory(factory.django.DjangoModelFactory):
 - Pages go in `src/pages/`, shared components in `src/components/common/`, feature components in `src/components/<feature>/`.
 - API functions go in `src/api/<resource>Api.ts` — one file per backend resource.
 - All route paths are constants in `src/constants/index.ts` (the `ROUTES` object) — never hardcode strings in `<Link>` or `navigate()`.
+- **All page components must be lazy-loaded** via `React.lazy()` in `AppRoutes.tsx`. Never import a page component directly at the top of the routes file.
+  ```tsx
+  // correct
+  const ProductPage = lazy(() => import("@/pages/ProductPage"));
+
+  // wrong — blocks the initial bundle
+  import ProductPage from "@/pages/ProductPage";
+  ```
 
 ### Form rules
 - Use controlled inputs (`value` + `onChange`) — no uncontrolled refs for forms.
 - Show field-level validation errors using the MUI `error` and `helperText` props on `AppTextField`.
 - Disable the submit button (and show a spinner) while a request is in flight.
 - Display API-level errors using the shared `AlertMessage` component above the form.
+
+### ESLint rules (enforced in CI)
+These rules are active in `.eslintrc` — do not disable them with inline comments:
+- `no-console` — no `console.log` / `console.error` in committed code; use a logger or remove before committing.
+- `@typescript-eslint/consistent-type-imports` — always use `import type { Foo }` for type-only imports.
+- `@typescript-eslint/no-unused-vars` — no unused variables or imports; remove them, do not prefix with `_` to suppress.
+- `react-hooks/rules-of-hooks` — hooks must only be called at the top level of a function component or custom hook.
+- `react-hooks/exhaustive-deps` — all `useEffect` / `useCallback` dependencies must be declared.
 
 ---
 
