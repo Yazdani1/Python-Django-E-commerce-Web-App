@@ -58,7 +58,7 @@ These rules apply to every file, every session, every suggestion.
 | React components | `PascalCase` | `ProductCard` |
 | React hooks | `camelCase` prefixed `use` | `useCartItems` |
 | React files | `PascalCase.tsx` for components | `ProductCard.tsx` |
-| CSS / Tailwind | utility-first; no global styles except reset |  |
+| CSS / MUI `sx` prop | object style only; no inline `style=` except dynamic values | |
 
 ---
 
@@ -78,6 +78,7 @@ These rules apply to every file, every session, every suggestion.
 - Serializers must validate data explicitly; never trust raw `request.data` directly.
 - Use `SerializerMethodField` sparingly — prefer computed model properties where possible.
 - Group related endpoints under a `ViewSet` when CRUD is involved.
+- All responses must use the shared envelope: `{ success, message, data }` via `SuccessResponseMixin`.
 
 ---
 
@@ -99,16 +100,76 @@ These rules apply to every file, every session, every suggestion.
 
 ---
 
-## 9. Testing
+## 9. Backend Testing Rules
 
-- Every new endpoint must have at least one happy-path test and one error-path test.
-- Tests live in `tests/` inside each app (`apps/users/tests/`, etc.).
-- Use `pytest` + `pytest-django`; never use the bare `unittest.TestCase` unless forced.
-- No mocking of the database in integration tests.
+**Package stack (fixed — do not swap these out):**
+| Package | Role |
+|---|---|
+| `pytest` | Test runner |
+| `pytest-django` | Django integration (DB access, client, settings) |
+| `factory-boy` | Model factories — never build test data by hand |
+| `pytest-cov` | Coverage reporting in CI |
+
+**Rules:**
+- Every new API endpoint **must** have: one happy-path test, one auth/permission test, and at least one validation/error-path test.
+- Tests live in `apps/<app>/tests/` — one file per view group (e.g. `test_auth_api.py`, `test_user_api.py`).
+- **Never** use `User.objects.create()` in tests — always go through a factory (`UserFactory`).
+- Factories live in `apps/<app>/tests/factories.py` — one factories file per app.
+- **No mocking of the database** in integration tests — tests run against a real PostgreSQL instance (see CI config).
+- Use `@pytest.mark.django_db` on every test class/function that touches the DB.
+- Use `APIClient.force_authenticate(user=...)` for authenticated endpoints — do not manually construct JWT headers in tests.
+- Test file naming: `test_<resource>_api.py` for API tests, `test_<model>.py` for model unit tests.
+
+**Example factory pattern (follow this exactly):**
+```python
+# apps/users/tests/factories.py
+import factory
+from apps.users.models import User
+
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = User
+
+    email = factory.Sequence(lambda n: f"user{n}@example.com")
+    first_name = factory.Faker("first_name")
+    last_name = factory.Faker("last_name")
+    password = factory.PostGenerationMethodCall("set_password", "TestPass123!")
+    is_active = True
+```
 
 ---
 
-## 10. Git & PR Rules
+## 10. React / Frontend Rules
+
+**UI library (fixed): Material UI v6 + TypeScript — do not use raw HTML elements where an MUI component exists.**
+
+### Component rules
+- Use MUI components as the primary building blocks: `Box`, `Stack`, `Typography`, `Button`, `TextField`, `Card`, etc.
+- Wrap MUI primitives in thin project-specific components when adding shared defaults (see `AppButton`, `AppTextField`).
+- Never repeat MUI `sx` prop logic across components — extract repeated styles into a shared `sx` object or a wrapper component.
+- Pages are the only files allowed to use `export default` — all other components use named exports.
+
+### Hook rules
+- API calls in components must go through `useApi(apiFn)` — never call `axios` directly from a component.
+- Global state (auth, cart, etc.) lives in Zustand stores under `src/store/`.
+- Local UI state (form fields, modal open, etc.) uses `useState` inside the component.
+- Side effects that need cleanup use `useEffect` with a return function.
+
+### File & folder rules
+- One component per file. File name = component name (`ProductCard.tsx` exports `ProductCard`).
+- Pages go in `src/pages/`, shared components in `src/components/common/`, feature components in `src/components/<feature>/`.
+- API functions go in `src/api/<resource>Api.ts` — one file per backend resource.
+- All route paths are constants in `src/constants/index.ts` (the `ROUTES` object) — never hardcode strings in `<Link>` or `navigate()`.
+
+### Form rules
+- Use controlled inputs (`value` + `onChange`) — no uncontrolled refs for forms.
+- Show field-level validation errors using the MUI `error` and `helperText` props on `AppTextField`.
+- Disable the submit button (and show a spinner) while a request is in flight.
+- Display API-level errors using the shared `AlertMessage` component above the form.
+
+---
+
+## 11. Git & PR Rules
 
 - Commit messages: `<type>(<scope>): <short summary>` — e.g. `feat(users): add JWT refresh endpoint`
 - Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`
@@ -131,12 +192,23 @@ backend/
 │   └── asgi.py
 ├── apps/
 │   ├── core/              # shared utilities, base classes, exceptions
-│   ├── users/             # user model, profile
+│   ├── users/             # user model, profile, password change
 │   └── authentication/    # JWT login/logout/refresh views
 ├── manage.py
 ├── requirements.txt
 └── .env
 
 frontend/
-└── (React app — created separately)
+├── src/
+│   ├── api/               # one file per backend resource
+│   ├── components/
+│   │   └── common/        # shared MUI wrapper components
+│   ├── constants/         # ROUTES, theme, TOKEN_KEYS
+│   ├── hooks/             # useApi, useAuth, and feature hooks
+│   ├── pages/             # one file per route
+│   ├── routes/            # AppRoutes, ProtectedRoute
+│   ├── store/             # Zustand stores
+│   ├── types/             # shared TypeScript interfaces
+│   └── utils/             # pure helper functions
+└── ...config files
 ```

@@ -11,7 +11,12 @@ from rest_framework.views import APIView
 
 from apps.core.mixins import SuccessResponseMixin
 
-from .serializers import UserCreateSerializer, UserReadSerializer, UserUpdateSerializer
+from .serializers import (
+    ChangePasswordSerializer,
+    UserCreateSerializer,
+    UserReadSerializer,
+    UserUpdateSerializer,
+)
 
 
 class RegisterView(SuccessResponseMixin, APIView):
@@ -44,3 +49,16 @@ class MeView(SuccessResponseMixin, APIView):
             data=UserReadSerializer(request.user).data,
             message="Profile updated.",
         )
+
+
+class ChangePasswordView(SuccessResponseMixin, APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request) -> None:
+        serializer = ChangePasswordSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        request.user.set_password(serializer.validated_data["new_password"])
+        request.user.save(update_fields=["password"])
+        return self.success_response(message="Password changed successfully.")
