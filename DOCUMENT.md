@@ -240,6 +240,20 @@ cd frontend && npm run dev
 **Status:** Complete  
 **Completed:** 2026-06-07
 
+### User model fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | BigAutoField | PK |
+| `email` | EmailField | unique, login identifier |
+| `first_name` | CharField(150) | optional |
+| `last_name` | CharField(150) | optional |
+| `phone_number` | CharField(20) | optional; validated format (7–20 digits) |
+| `is_active` | BooleanField | default True |
+| `is_staff` | BooleanField | default False |
+| `created_at` | DateTimeField | auto set on create |
+| `updated_at` | DateTimeField | auto set on save |
+
 ### Backend API endpoints
 
 Base URL: `/api/v1/`
@@ -248,9 +262,12 @@ Base URL: `/api/v1/`
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
+| `POST` | `/auth/register/` | Public | Create account (alias for `/users/register/`) |
 | `POST` | `/auth/login/` | Public | Email + password → access + refresh tokens |
 | `POST` | `/auth/refresh/` | Public | Refresh token → new access token |
 | `POST` | `/auth/logout/` | Bearer | Blacklist refresh token |
+| `GET` | `/auth/profile/` | Bearer | Get own profile (alias for `/users/me/`) |
+| `PATCH` | `/auth/profile/` | Bearer | Update name / phone (alias for `/users/me/`) |
 
 #### Users (`/api/v1/users/`)
 
@@ -258,7 +275,7 @@ Base URL: `/api/v1/`
 |---|---|---|---|
 | `POST` | `/users/register/` | Public | Create account |
 | `GET` | `/users/me/` | Bearer | Get own profile |
-| `PATCH` | `/users/me/` | Bearer | Update first/last name |
+| `PATCH` | `/users/me/` | Bearer | Update first_name, last_name, phone_number |
 | `POST` | `/users/change-password/` | Bearer | Change password (current + new) |
 
 ### Request / Response shapes
@@ -276,7 +293,7 @@ Base URL: `/api/v1/`
 }
 ```
 
-**POST `/users/register/`**
+**POST `/auth/register/`** (same as `/users/register/`)
 ```json
 // Request
 {
@@ -284,14 +301,21 @@ Base URL: `/api/v1/`
   "password": "StrongPass123!",
   "password_confirm": "StrongPass123!",
   "first_name": "Jane",
-  "last_name": "Doe"
+  "last_name": "Doe",
+  "phone_number": "+1-555-123-4567"
 }
 
 // Response 201
 {
   "success": true,
   "message": "Account created successfully.",
-  "data": { "id": 1, "email": "user@example.com", "full_name": "Jane Doe", ... }
+  "data": {
+    "id": 1,
+    "email": "user@example.com",
+    "full_name": "Jane Doe",
+    "phone_number": "+1-555-123-4567",
+    "created_at": "2026-06-07T..."
+  }
 }
 ```
 
@@ -331,8 +355,8 @@ Base URL: `/api/v1/`
 
 | File | Tests |
 |---|---|
-| `apps/users/tests/test_user_api.py` | Register (success, duplicate email, password mismatch), Me GET (auth, unauth), Me PATCH, ChangePassword (success, wrong current, mismatch) |
-| `apps/authentication/tests/test_auth_api.py` | Login (success, wrong password, nonexistent), Refresh (success, invalid token), Logout (success, missing token) |
+| `apps/users/tests/test_user_api.py` | Register (success, with phone, invalid phone, duplicate email, password mismatch, weak password), Me GET (auth, unauth), Me PATCH (name, phone, invalid phone, unauth), ChangePassword (success, wrong current, mismatch, weak, unauth) |
+| `apps/authentication/tests/test_auth_api.py` | Register via auth prefix (success, duplicate, mismatch), Profile via auth prefix (get, unauth, update phone), Login (success, wrong password, nonexistent, inactive, missing fields), Refresh (success, invalid token, missing), Logout (success, missing token, unauth) |
 
 ---
 

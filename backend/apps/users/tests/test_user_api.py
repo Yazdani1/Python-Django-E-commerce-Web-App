@@ -46,6 +46,29 @@ class TestRegisterView:
         assert response.data["success"] is True
         assert response.data["data"]["email"] == "new@example.com"
         assert response.data["data"]["full_name"] == "Jane Doe"
+        assert "phone_number" in response.data["data"]
+
+    def test_register_with_phone_number(self, api_client: APIClient) -> None:
+        payload = {
+            "email": "phone@example.com",
+            "password": "StrongPass123!",
+            "password_confirm": "StrongPass123!",
+            "phone_number": "+1-555-123-4567",
+        }
+        response = api_client.post(self.url, payload, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["data"]["phone_number"] == "+1-555-123-4567"
+
+    def test_register_invalid_phone_number(self, api_client: APIClient) -> None:
+        payload = {
+            "email": "phone@example.com",
+            "password": "StrongPass123!",
+            "password_confirm": "StrongPass123!",
+            "phone_number": "not-a-phone",
+        }
+        response = api_client.post(self.url, payload, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["success"] is False
 
     def test_register_password_mismatch(self, api_client: APIClient) -> None:
         payload = {
@@ -90,6 +113,7 @@ class TestMeView:
         response = auth_client.get(self.url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["data"]["email"] == user.email
+        assert "phone_number" in response.data["data"]
 
     def test_get_profile_unauthenticated(self, api_client: APIClient) -> None:
         response = api_client.get(self.url)
@@ -99,6 +123,17 @@ class TestMeView:
         response = auth_client.patch(self.url, {"first_name": "Updated"}, format="json")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["data"]["first_name"] == "Updated"
+
+    def test_update_phone_number(self, auth_client: APIClient) -> None:
+        response = auth_client.patch(
+            self.url, {"phone_number": "+44 7700 900123"}, format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["data"]["phone_number"] == "+44 7700 900123"
+
+    def test_update_invalid_phone_number(self, auth_client: APIClient) -> None:
+        response = auth_client.patch(self.url, {"phone_number": "bad!"}, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_update_profile_unauthenticated(self, api_client: APIClient) -> None:
         response = api_client.patch(self.url, {"first_name": "Updated"}, format="json")

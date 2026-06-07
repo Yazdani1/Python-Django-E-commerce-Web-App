@@ -1,7 +1,11 @@
 """
 User serializers.
-Split into read (safe) and write (mutating) serializers to avoid
-accidentally exposing sensitive fields in responses.
+
+Read vs write serializers are kept separate so sensitive fields (password,
+phone_number) are never accidentally echoed back in the wrong context.
+
+phone_number validation is defined once on the model field via RegexValidator;
+DRF inherits it automatically when the field is not explicitly declared here.
 """
 
 from django.contrib.auth.password_validation import validate_password
@@ -12,25 +16,44 @@ from .models import User
 
 
 class UserReadSerializer(serializers.ModelSerializer):
-    """Safe read-only representation returned to clients."""
+    """Safe, read-only snapshot returned to clients after any write operation."""
 
     full_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
-        fields = ["id", "email", "first_name", "last_name", "full_name", "created_at"]
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "phone_number",
+            "created_at",
+        ]
         read_only_fields = fields
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    """Used only for registration — writes password, never returns it."""
+    """
+    Registration payload.
+    Writes password (hashed), never returns it.
+    phone_number is optional — omit or pass "" to skip.
+    """
 
     password = serializers.CharField(write_only=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ["email", "first_name", "last_name", "password", "password_confirm"]
+        fields = [
+            "email",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "password",
+            "password_confirm",
+        ]
 
     def validate(self, attrs: dict) -> dict:
         if attrs["password"] != attrs.pop("password_confirm"):
@@ -42,15 +65,18 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    """Allows partial profile updates — email and password are excluded."""
+    """
+    Partial profile update — only name fields and phone_number are editable.
+    Email and password are deliberately excluded; each has its own endpoint.
+    """
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name"]
+        fields = ["first_name", "last_name", "phone_number"]
 
 
 class ChangePasswordSerializer(serializers.Serializer):
-    """Validates current password before setting a new one."""
+    """Validates current password before allowing a new one to be set."""
 
     current_password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(

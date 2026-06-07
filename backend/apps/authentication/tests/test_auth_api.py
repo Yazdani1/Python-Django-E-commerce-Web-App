@@ -1,5 +1,5 @@
 """
-Authentication API tests — login, refresh, logout.
+Authentication API tests — login, refresh, logout, register, profile.
 Every endpoint has: happy path, auth/permission check, validation error path.
 """
 
@@ -22,9 +22,76 @@ def user(db):
     return UserFactory()
 
 
+@pytest.fixture
+def auth_client(user):
+    client = APIClient()
+    client.force_authenticate(user=user)
+    return client
+
+
 def get_tokens_for_user(user) -> dict:
     refresh = RefreshToken.for_user(user)
     return {"access": str(refresh.access_token), "refresh": str(refresh)}
+
+
+# ── Register (auth prefix alias) ───────────────────────────────────────────────
+@pytest.mark.django_db
+class TestRegisterViaAuth:
+    url = "/api/v1/auth/register/"
+
+    def test_register_success(self, api_client: APIClient) -> None:
+        payload = {
+            "email": "authregister@example.com",
+            "password": "StrongPass123!",
+            "password_confirm": "StrongPass123!",
+            "first_name": "Auth",
+            "last_name": "User",
+        }
+        response = api_client.post(self.url, payload, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["success"] is True
+        assert response.data["data"]["email"] == "authregister@example.com"
+
+    def test_register_duplicate_email(self, api_client: APIClient, user) -> None:
+        payload = {
+            "email": user.email,
+            "password": "StrongPass123!",
+            "password_confirm": "StrongPass123!",
+        }
+        response = api_client.post(self.url, payload, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_register_password_mismatch(self, api_client: APIClient) -> None:
+        payload = {
+            "email": "new@example.com",
+            "password": "StrongPass123!",
+            "password_confirm": "WrongPass!",
+        }
+        response = api_client.post(self.url, payload, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+# ── Profile (auth prefix alias) ────────────────────────────────────────────────
+@pytest.mark.django_db
+class TestProfileViaAuth:
+    url = "/api/v1/auth/profile/"
+
+    def test_get_profile_authenticated(self, auth_client: APIClient, user) -> None:
+        response = auth_client.get(self.url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["data"]["email"] == user.email
+        assert "phone_number" in response.data["data"]
+
+    def test_get_profile_unauthenticated(self, api_client: APIClient) -> None:
+        response = api_client.get(self.url)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_update_profile(self, auth_client: APIClient) -> None:
+        response = auth_client.patch(
+            self.url, {"phone_number": "+1-800-555-0100"}, format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["data"]["phone_number"] == "+1-800-555-0100"
 
 
 # ── Login ──────────────────────────────────────────────────────────────────────
