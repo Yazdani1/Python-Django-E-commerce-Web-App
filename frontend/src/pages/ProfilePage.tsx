@@ -6,7 +6,7 @@ import { useApi } from "@/hooks/useApi";
 import { userApi } from "@/api/userApi";
 import { useAuthStore } from "@/store/authStore";
 
-export default function ProfilePage() {
+const ProfilePage = () => {
   const { user } = useAuth();
   const fetchMe = useAuthStore((s) => s.fetchMe);
   const { execute, isLoading, error } = useApi(userApi.updateMe);
@@ -88,4 +88,6 @@ export default function ProfilePage() {
       </Card>
     </Box>
   );
-}
+};
+
+export default ProfilePage;

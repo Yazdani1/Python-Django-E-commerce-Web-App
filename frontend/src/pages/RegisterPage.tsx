@@ -5,7 +5,7 @@ import { AppButton, AppTextField, AlertMessage } from "@/components/common";
 import { useAuth } from "@/hooks/useAuth";
 import { APP_NAME, ROUTES } from "@/constants";
 
-export default function RegisterPage() {
+const RegisterPage = () => {
   const navigate = useNavigate();
   const { register, isLoading } = useAuth();
 
@@ -111,4 +111,6 @@ export default function RegisterPage() {
       </Card>
     </Box>
   );
-}
+};
+
+export default RegisterPage;

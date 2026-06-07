@@ -5,7 +5,7 @@ import { AppButton, AppTextField, AlertMessage } from "@/components/common";
 import { useAuth } from "@/hooks/useAuth";
 import { APP_NAME, ROUTES } from "@/constants";
 
-export default function LoginPage() {
+const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isLoading } = useAuth();
 
@@ -84,4 +84,6 @@ export default function LoginPage() {
       </Card>
     </Box>
   );
-}
+};
+
+export default LoginPage;

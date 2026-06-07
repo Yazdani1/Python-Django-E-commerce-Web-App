@@ -10,7 +10,7 @@ const quickLinks = [
   { label: "Change Password", to: ROUTES.CHANGE_PASSWORD, icon: <LockIcon /> },
 ];
 
-export default function DashboardPage() {
+const DashboardPage = () => {
   const { user } = useAuth();
 
   if (!user) return <LoadingSpinner message="Loading…" />;
@@ -51,4 +51,6 @@ export default function DashboardPage() {
       </Grid>
     </Box>
   );
-}
+};
+
+export default DashboardPage;

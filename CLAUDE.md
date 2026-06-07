@@ -169,13 +169,26 @@ class UserFactory(factory.django.DjangoModelFactory):
   ```
 
 - Interface names must match the component name + `Props` suffix: `ButtonProps`, `CartItemProps`, etc.
-- Never use `React.FC` — always import and use `FC` directly from `"react"`.
+- When a component wraps an MUI component and adds no new props, use `type AppXxxProps = MuiXxxProps` (not `interface extends`) — MUI uses complex generics that TypeScript cannot extend via `interface`.
+- Never use `React.FC` — always import `FC` as a type-only import: `import type { FC } from "react"`.
+- MUI prop types (`ButtonProps`, `TextFieldProps`, etc.) are type-only — always import them with `import type`.
 
 ### Component rules
 - Use MUI components as the primary building blocks: `Box`, `Stack`, `Typography`, `Button`, `TextField`, `Card`, etc.
 - Wrap MUI primitives in thin project-specific components when adding shared defaults (see `AppButton`, `AppTextField`).
 - Never repeat MUI `sx` prop logic across components — extract repeated styles into a shared `sx` object or a wrapper component.
-- Pages are the only files allowed to use `export default` — all other components use named exports.
+- Pages are the only files allowed to use `export default`. Always use an arrow function with `export default` at the bottom — never `export default function`:
+  ```tsx
+  // correct
+  const ProductPage = () => {
+    return <Box>...</Box>;
+  };
+
+  export default ProductPage;
+
+  // wrong
+  export default function ProductPage() { ... }
+  ```
 
 ### Hook rules
 - API calls in components must go through `useApi(apiFn)` — never call `axios` directly from a component.
@@ -213,7 +226,18 @@ These rules are active in `.eslintrc` — do not disable them with inline commen
 
 ---
 
-## 11. Git & PR Rules
+## 11. Documentation Rule
+
+**Every new feature must be documented in `DOCUMENT.md` before the work is considered done.**
+
+- When adding a backend endpoint: add a row to the API table with method, path, auth, request body, and response shape.
+- When adding a frontend page or flow: add the route, description, and any key components to the Frontend Routes section.
+- When completing a phase: add a Phase summary block with what was built and which files were created or changed.
+- Keep `DOCUMENT.md` as the single source of truth for the project's feature set and API contract — it must always reflect the current state of the codebase.
+
+---
+
+## 12. Git & PR Rules
 
 - Commit messages: `<type>(<scope>): <short summary>` — e.g. `feat(users): add JWT refresh endpoint`
 - Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`

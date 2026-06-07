@@ -11,7 +11,7 @@ const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
 const ChangePasswordPage = lazy(() => import("@/pages/ChangePasswordPage"));
 
-export default function AppRoutes() {
+const AppRoutes = () => {
   return (
     <Suspense fallback={<LoadingSpinner fullPage />}>
       <Routes>
@@ -33,4 +33,6 @@ export default function AppRoutes() {
       </Routes>
     </Suspense>
   );
-}
+};
+
+export default AppRoutes;

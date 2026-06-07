@@ -23,7 +23,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES, APP_NAME } from "@/constants";
 
-export function AuthLayout() {
+export const AuthLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

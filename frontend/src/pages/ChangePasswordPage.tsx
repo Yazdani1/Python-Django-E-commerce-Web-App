@@ -10,7 +10,7 @@ const EMPTY_FORM = {
   new_password_confirm: "",
 };
 
-export default function ChangePasswordPage() {
+const ChangePasswordPage = () => {
   const { execute, isLoading, error, clearError } = useApi(userApi.changePassword);
   const [form, setForm] = useState(EMPTY_FORM);
   const [success, setSuccess] = useState(false);
@@ -83,4 +83,6 @@ export default function ChangePasswordPage() {
       </Card>
     </Box>
   );
-}
+};
+
+export default ChangePasswordPage;
