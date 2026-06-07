@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import { Box, Card, CardContent, Stack, Typography, Divider } from "@mui/material";
+import { Box, Card, CardContent, Divider, Stack, Typography } from "@mui/material";
 import { AppButton, AppTextField, AlertMessage } from "@/components/common";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -9,81 +9,94 @@ import { useAuthStore } from "@/store/authStore";
 const ProfilePage = () => {
   const { user } = useAuth();
   const fetchMe = useAuthStore((s) => s.fetchMe);
-  const { execute, isLoading, error } = useApi(userApi.updateMe);
+  const { execute, isLoading, error, clearError } = useApi(userApi.updateMe);
   const [success, setSuccess] = useState(false);
 
   const [form, setForm] = useState({
     first_name: user?.first_name ?? "",
     last_name: user?.last_name ?? "",
+    phone_number: user?.phone_number ?? "",
   });
 
   const handleChange =
     (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
       setSuccess(false);
+      clearError();
     };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const result = await execute(form);
-    if (result) {
+    if (!result.error) {
       await fetchMe();
       setSuccess(true);
     }
   };
 
   return (
-    <Box maxWidth={520} mx="auto">
-      <Typography variant="h5" mb={3}>
+    <Box maxWidth={540} mx="auto">
+      <Typography variant="h5" fontWeight={700} mb={3}>
         My Profile
       </Typography>
 
       <Card>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="subtitle2" color="text.secondary" mb={2}>
-            Account
+          <Typography variant="overline" color="text.secondary" letterSpacing={1}>
+            Account Info
           </Typography>
-          <Typography variant="body2">
-            <strong>Email:</strong> {user?.email}
-          </Typography>
-          <Typography variant="body2" mt={0.5}>
-            <strong>Member since:</strong>{" "}
-            {user ? new Date(user.created_at).toLocaleDateString() : "—"}
-          </Typography>
+          <Box mt={1} mb={0.5}>
+            <Typography variant="body2">
+              <strong>Email:</strong> {user?.email}
+            </Typography>
+            <Typography variant="body2" mt={0.5}>
+              <strong>Member since:</strong>{" "}
+              {user ? new Date(user.created_at).toLocaleDateString() : "—"}
+            </Typography>
+          </Box>
 
           <Divider sx={{ my: 3 }} />
 
-          <Typography variant="subtitle2" color="text.secondary" mb={2}>
-            Edit Name
+          <Typography variant="overline" color="text.secondary" letterSpacing={1}>
+            Edit Details
           </Typography>
 
-          <AlertMessage message={error} />
-          {success && (
-            <AlertMessage message="Profile updated successfully." severity="success" />
-          )}
+          <Box mt={2}>
+            <AlertMessage message={error} />
+            {success && (
+              <AlertMessage message="Profile updated successfully." severity="success" />
+            )}
 
-          <Stack component="form" onSubmit={handleSubmit} spacing={2}>
-            <Stack direction="row" spacing={1.5}>
+            <Stack component="form" onSubmit={handleSubmit} spacing={2} mt={1}>
+              <Stack direction="row" spacing={1.5}>
+                <AppTextField
+                  label="First Name"
+                  value={form.first_name}
+                  onChange={handleChange("first_name")}
+                />
+                <AppTextField
+                  label="Last Name"
+                  value={form.last_name}
+                  onChange={handleChange("last_name")}
+                />
+              </Stack>
               <AppTextField
-                label="First Name"
-                value={form.first_name}
-                onChange={handleChange("first_name")}
+                label="Phone Number"
+                type="tel"
+                value={form.phone_number}
+                onChange={handleChange("phone_number")}
+                placeholder="+1-555-000-0000"
               />
-              <AppTextField
-                label="Last Name"
-                value={form.last_name}
-                onChange={handleChange("last_name")}
-              />
+              <AppButton
+                type="submit"
+                variant="contained"
+                loading={isLoading}
+                sx={{ alignSelf: "flex-start" }}
+              >
+                Save Changes
+              </AppButton>
             </Stack>
-            <AppButton
-              type="submit"
-              variant="contained"
-              loading={isLoading}
-              sx={{ alignSelf: "flex-start" }}
-            >
-              Save Changes
-            </AppButton>
-          </Stack>
+          </Box>
         </CardContent>
       </Card>
     </Box>

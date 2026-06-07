@@ -1,4 +1,4 @@
-export const APP_NAME = "E-Commerce App";
+export const APP_NAME = "ShopEase";
 
 export const ROUTES = {
   HOME: "/",
@@ -7,6 +7,7 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   PROFILE: "/profile",
   CHANGE_PASSWORD: "/change-password",
+  CATEGORIES: "/categories",
 } as const;
 
 export const TOKEN_KEYS = {
@@ -14,5 +15,4 @@ export const TOKEN_KEYS = {
   REFRESH: "refresh_token",
 } as const;
 
-// Token lifetime buffer: refresh 60 s before expiry
 export const TOKEN_REFRESH_BUFFER_MS = 60_000;

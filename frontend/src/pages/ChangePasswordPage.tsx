@@ -4,7 +4,7 @@ import { AppButton, AppTextField, AlertMessage } from "@/components/common";
 import { useApi } from "@/hooks/useApi";
 import { userApi } from "@/api/userApi";
 
-const EMPTY_FORM = {
+const EMPTY = {
   current_password: "",
   new_password: "",
   new_password_confirm: "",
@@ -12,7 +12,7 @@ const EMPTY_FORM = {
 
 const ChangePasswordPage = () => {
   const { execute, isLoading, error, clearError } = useApi(userApi.changePassword);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState(EMPTY);
   const [success, setSuccess] = useState(false);
 
   const handleChange =
@@ -25,15 +25,15 @@ const ChangePasswordPage = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const result = await execute(form);
-    if (result) {
-      setForm(EMPTY_FORM);
+    if (!result.error) {
+      setForm(EMPTY);
       setSuccess(true);
     }
   };
 
   return (
     <Box maxWidth={480} mx="auto">
-      <Typography variant="h5" mb={3}>
+      <Typography variant="h5" fontWeight={700} mb={3}>
         Change Password
       </Typography>
 
@@ -41,13 +41,10 @@ const ChangePasswordPage = () => {
         <CardContent sx={{ p: 3 }}>
           <AlertMessage message={error} />
           {success && (
-            <AlertMessage
-              message="Password changed successfully."
-              severity="success"
-            />
+            <AlertMessage message="Password changed successfully." severity="success" />
           )}
 
-          <Stack component="form" onSubmit={handleSubmit} spacing={2}>
+          <Stack component="form" onSubmit={handleSubmit} spacing={2} mt={error || success ? 1 : 0}>
             <AppTextField
               label="Current Password"
               type="password"

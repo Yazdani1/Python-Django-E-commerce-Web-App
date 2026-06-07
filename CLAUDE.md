@@ -173,6 +173,36 @@ class UserFactory(factory.django.DjangoModelFactory):
 - Never use `React.FC` — always import `FC` as a type-only import: `import type { FC } from "react"`.
 - MUI prop types (`ButtonProps`, `TextFieldProps`, etc.) are type-only — always import them with `import type`.
 
+### Shared UI components (always use these — never reinvent)
+
+| Component | File | When to use |
+|---|---|---|
+| `AppButton` | `components/common/AppButton.tsx` | Every button — wraps MUI Button with loading spinner |
+| `AppTextField` | `components/common/AppTextField.tsx` | Every text input |
+| `AppModal` | `components/common/AppModal.tsx` | Any form or content modal — title, ×, Cancel (outlined red) + Save (contained) |
+| `ConfirmModal` | `components/common/ConfirmModal.tsx` | Delete / destructive confirmations — title, message, Cancel + Confirm buttons |
+| `ActionMenu` | `components/common/ActionMenu.tsx` | **Every row that needs Edit and/or Delete.** Renders a `MoreVert` (⋮) icon button; clicking opens a MUI Menu with Edit (primary icon) and Delete (error icon) items separated by a divider. Never place raw Edit/Delete icon buttons directly in a table row or list item. |
+| `AlertMessage` | `components/common/AlertMessage.tsx` | API error and success banners above forms |
+
+**`ActionMenu` usage:**
+```tsx
+// correct — always use ActionMenu for row-level edit/delete
+<ActionMenu
+  onEdit={() => handleEdit(row)}
+  onDelete={() => setDeleteTarget(row)}
+/>
+
+// wrong — never do this in a table row
+<IconButton onClick={() => handleEdit(row)}><EditIcon /></IconButton>
+<IconButton onClick={() => handleDelete(row)}><DeleteIcon /></IconButton>
+```
+Pass only the props you need — `onEdit` and `onDelete` are both optional. Omitting one removes that item from the menu. Labels can be customised via `editLabel` / `deleteLabel` props.
+
+**Modal rules:**
+- Modals must never close on backdrop click or Escape key — both `AppModal` and `ConfirmModal` enforce this already.
+- Pass `formId` to `AppModal` when the Save button should submit a `<form>` — the button becomes `type="submit" form={formId}`.
+- Use `ConfirmModal` (not a custom dialog) for every destructive action confirmation.
+
 ### Component rules
 - Use MUI components as the primary building blocks: `Box`, `Stack`, `Typography`, `Button`, `TextField`, `Card`, etc.
 - Wrap MUI primitives in thin project-specific components when adding shared defaults (see `AppButton`, `AppTextField`).

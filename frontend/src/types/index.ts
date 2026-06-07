@@ -1,4 +1,10 @@
-// ── API envelope shape ─────────────────────────────────────────────────────
+// ── Central error-aware result returned by every apiClient method ───────────
+export interface ApiResult<T> {
+  data: T | null;
+  error: string | null;
+}
+
+// ── Raw backend success envelope ────────────────────────────────────────────
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
@@ -13,7 +19,7 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
-// ── Auth ───────────────────────────────────────────────────────────────────
+// ── Auth ────────────────────────────────────────────────────────────────────
 export interface TokenPair {
   access: string;
   refresh: string;
@@ -30,24 +36,46 @@ export interface RegisterPayload {
   password_confirm: string;
   first_name?: string;
   last_name?: string;
+  phone_number?: string;
 }
 
-// ── User ───────────────────────────────────────────────────────────────────
+// ── User ────────────────────────────────────────────────────────────────────
 export interface User {
   id: number;
   email: string;
   first_name: string;
   last_name: string;
   full_name: string;
+  phone_number: string;
+  is_staff: boolean;
   created_at: string;
 }
 
 export interface UpdateProfilePayload {
   first_name?: string;
   last_name?: string;
+  phone_number?: string;
 }
 
-// ── Auth store state ───────────────────────────────────────────────────────
+// ── Category ────────────────────────────────────────────────────────────────
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CategoryPayload {
+  name: string;
+  slug?: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+// ── Auth store state ────────────────────────────────────────────────────────
 export interface AuthState {
   user: User | null;
   accessToken: string | null;

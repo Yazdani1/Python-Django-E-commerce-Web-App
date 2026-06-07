@@ -1,16 +1,16 @@
-import api from "./axiosInstance";
-import type { ApiResponse, LoginPayload, RegisterPayload, TokenPair, User } from "@/types";
+import { apiClient } from "./client";
+import type { ApiResult, LoginPayload, RegisterPayload, TokenPair, User } from "@/types";
 
 export const authApi = {
-  login: (payload: LoginPayload) =>
-    api.post<ApiResponse<TokenPair>>("/auth/login/", payload),
+  login: (payload: LoginPayload): Promise<ApiResult<TokenPair>> =>
+    apiClient.post<TokenPair>("/auth/login/", payload),
 
-  register: (payload: RegisterPayload) =>
-    api.post<ApiResponse<User>>("/users/register/", payload),
+  register: (payload: RegisterPayload): Promise<ApiResult<User>> =>
+    apiClient.post<User>("/auth/register/", payload),
 
-  logout: (refresh: string) =>
-    api.post<ApiResponse<null>>("/auth/logout/", { refresh }),
+  logout: (refresh: string): Promise<ApiResult<null>> =>
+    apiClient.post<null>("/auth/logout/", { refresh }),
 
-  refreshToken: (refresh: string) =>
-    api.post<ApiResponse<{ access: string }>>("/auth/refresh/", { refresh }),
+  refreshToken: (refresh: string): Promise<ApiResult<{ access: string }>> =>
+    apiClient.post<{ access: string }>("/auth/refresh/", { refresh }),
 };

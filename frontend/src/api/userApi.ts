@@ -1,5 +1,5 @@
-import api from "./axiosInstance";
-import type { ApiResponse, UpdateProfilePayload, User } from "@/types";
+import { apiClient } from "./client";
+import type { ApiResult, UpdateProfilePayload, User } from "@/types";
 
 export interface ChangePasswordPayload {
   current_password: string;
@@ -8,12 +8,11 @@ export interface ChangePasswordPayload {
 }
 
 export const userApi = {
-  getMe: () =>
-    api.get<ApiResponse<User>>("/users/me/"),
+  getMe: (): Promise<ApiResult<User>> => apiClient.get<User>("/users/me/"),
 
-  updateMe: (payload: UpdateProfilePayload) =>
-    api.patch<ApiResponse<User>>("/users/me/", payload),
+  updateMe: (payload: UpdateProfilePayload): Promise<ApiResult<User>> =>
+    apiClient.patch<User>("/users/me/", payload),
 
-  changePassword: (payload: ChangePasswordPayload) =>
-    api.post<ApiResponse<null>>("/users/change-password/", payload),
+  changePassword: (payload: ChangePasswordPayload): Promise<ApiResult<null>> =>
+    apiClient.post<null>("/users/change-password/", payload),
 };

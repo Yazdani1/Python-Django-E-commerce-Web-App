@@ -29,6 +29,7 @@ class UserReadSerializer(serializers.ModelSerializer):
             "last_name",
             "full_name",
             "phone_number",
+            "is_staff",
             "created_at",
         ]
         read_only_fields = fields
