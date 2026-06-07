@@ -14,6 +14,11 @@ django-cors-headers==4.7.0
 # ── Environment Variables ─────────────────────────────────────────────────────
 python-decouple==3.8             # reads .env file cleanly
 
+# ── Media & Image Handling ───────────────────────────────────────────────────
+Pillow==11.2.1                   # image validation for ImageField
+cloudinary==1.41.0               # Cloudinary Python SDK
+django-cloudinary-storage==0.3.0 # Django storage backend for Cloudinary
+
 # ── Dev / Code Quality ────────────────────────────────────────────────────────
 black==25.1.0                    # formatter
 isort==6.0.1                     # import sorter

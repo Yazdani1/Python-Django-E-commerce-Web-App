@@ -15,6 +15,8 @@
 6. [CI/CD Pipeline](#6-cicd-pipeline)
 7. [Phase 1 — Project Scaffold](#7-phase-1--project-scaffold)
 8. [Phase 2 — User Authentication Module](#8-phase-2--user-authentication-module)
+9. [Phase 3 — Category Management Module](#9-phase-3--category-management-module)
+10. [Phase 4 — Product Module](#10-phase-4--product-module)
 
 ---
 
@@ -440,5 +442,143 @@ Two serializers keep read and write separate:
 | File | Tests |
 |---|---|
 | `apps/categories/tests/test_category_api.py` | List (public, active-only filter, admin sees inactive, field check), Retrieve (public, 404, inactive hidden/visible), Create (success, auto-slug, custom slug, duplicate name, missing name, non-admin 403, unauth 401), Update (full, partial slug preserved, slug change, non-admin 403, unauth 401), Delete (success, non-admin 403, unauth 401, DB removal) |
+
+---
+
+## 10. Phase 4 — Product Module
+
+**Status:** Complete  
+**Completed:** 2026-06-07
+
+### Product model fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | BigAutoField | PK |
+| `name` | CharField(255) | unique |
+| `slug` | SlugField(280) | unique; auto-generated from name if blank |
+| `sku` | CharField(20) | unique; auto-generated (`SKU-XXXXXXXX` from UUID hex) |
+| `description` | TextField | optional; defaults to `""` |
+| `price` | DecimalField(10,2) | required; min 0.01 enforced in serializer |
+| `stock_quantity` | PositiveIntegerField | default 0 |
+| `image` | ImageField | optional; stored via Cloudinary |
+| `category` | FK → Category | `SET_NULL`; optional |
+| `is_active` | BooleanField | default True; inactive hidden from public |
+| `created_at` | DateTimeField | auto set on create |
+| `updated_at` | DateTimeField | auto set on save |
+
+### Image storage
+
+Media files are stored in **Cloudinary** via `django-cloudinary-storage`. The backend `.env` requires:
+
+```env
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+```
+
+### Backend API endpoints
+
+Base URL: `/api/v1/products/`  
+Lookup: by **slug** — e.g. `/api/v1/products/wireless-mouse/`  
+Content-Type: `multipart/form-data` for create/update (image upload)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/products/` | Public | Paginated list (active only for public; all for admin) |
+| `GET` | `/products/{slug}/` | Public | Single product detail |
+| `POST` | `/products/` | Admin | Create product; slug + SKU auto-generated |
+| `PATCH` | `/products/{slug}/` | Admin | Partial update; SKU never changes |
+| `DELETE` | `/products/{slug}/` | Admin | Hard delete |
+
+### Serializer design
+
+- **`ProductReadSerializer`** — all fields read-only; includes nested `CategoryReadSerializer`; `image_url` via `SerializerMethodField` (returns absolute URL).
+- **`ProductWriteSerializer`** — admin input; `slug` optional (auto from name); `image` optional; validates `price > 0`.
+
+### Permission matrix
+
+| Action | Unauthenticated | Regular user | Admin (is_staff) |
+|---|---|---|---|
+| list / retrieve | 200 ✓ (active only) | 200 ✓ (active only) | 200 ✓ (all) |
+| create | 401 | 403 | 201 ✓ |
+| update / partial update | 401 | 403 | 200 ✓ |
+| delete | 401 | 403 | 200 ✓ |
+
+### Request / Response shapes
+
+**POST `/products/`** (`multipart/form-data`)
+```
+name=Wireless Mouse
+price=39.99
+stock_quantity=50
+category=1          ← category id
+is_active=true
+image=<file>        ← optional
+```
+
+```json
+{
+  "success": true,
+  "message": "Product created successfully.",
+  "data": {
+    "id": 1,
+    "name": "Wireless Mouse",
+    "slug": "wireless-mouse",
+    "sku": "SKU-A3F2B1C9",
+    "price": "39.99",
+    "stock_quantity": 50,
+    "image_url": "https://res.cloudinary.com/...",
+    "category": { "id": 1, "name": "Electronics", "slug": "electronics", ... },
+    "is_active": true,
+    "created_at": "2026-06-07T..."
+  }
+}
+```
+
+### Frontend
+
+| Route | Page | Auth required | Admin-only actions |
+|---|---|---|---|
+| `/products` | `ProductsPage` | Yes | New Product button, Edit/Delete per row |
+
+**Key components:**
+- `src/pages/ProductsPage.tsx` — table view; admins see ActionMenu per row
+- `src/components/products/ProductFormModal.tsx` — create/edit form with image upload + preview, category dropdown, active toggle
+- `src/api/productApi.ts` — uses `apiClient.postForm` / `patchForm` for multipart upload
+
+### Test coverage
+
+| File | Tests |
+|---|---|
+| `apps/products/tests/test_product_api.py` | List (public, active-only filter, admin sees all, SKU in response), Retrieve (public, 404, inactive hidden/visible to admin), Create (success, auto SKU+slug, missing name, non-admin 403, unauth 401), Update (partial success, SKU preserved, non-admin 403, unauth 401), Delete (success, DB removal, non-admin 403, unauth 401) |
+
+### Files created / changed
+
+**Backend:**
+- `backend/apps/products/models.py` — Product model
+- `backend/apps/products/serializers.py` — read + write serializers
+- `backend/apps/products/views.py` — ProductViewSet
+- `backend/apps/products/urls.py` — router registration
+- `backend/apps/products/admin.py` — admin config
+- `backend/apps/products/migrations/0001_initial.py`
+- `backend/apps/products/tests/factories.py`
+- `backend/apps/products/tests/test_product_api.py`
+- `backend/config/settings/base.py` — added `apps.products`, `cloudinary_storage`, `CLOUDINARY_STORAGE`, `STORAGES`
+- `backend/config/urls.py` — added products URL
+- `backend/requirements.txt` — added Pillow, cloudinary, django-cloudinary-storage
+- `backend/.env.example` — added Cloudinary variables
+
+**Frontend:**
+- `frontend/src/types/index.ts` — added `Product`, `ProductPayload`
+- `frontend/src/constants/index.ts` — added `ROUTES.PRODUCTS`
+- `frontend/src/api/client.ts` — added `postForm`, `patchForm`
+- `frontend/src/api/productApi.ts` — new
+- `frontend/src/components/products/ProductFormModal.tsx` — new
+- `frontend/src/pages/ProductsPage.tsx` — new
+- `frontend/src/components/layout/AuthLayout.tsx` — added Products nav item
+- `frontend/src/pages/DashboardPage.tsx` — added Products quick link
+- `frontend/src/pages/ProfilePage.tsx` — added role display + Admin chip
+- `frontend/src/routes/AppRoutes.tsx` — added `/products` route
 
 <!-- ── Add new phases below this line ─────────────────────────────────────── -->

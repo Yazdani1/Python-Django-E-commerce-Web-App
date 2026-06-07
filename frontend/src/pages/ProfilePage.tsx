@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import { Box, Card, CardContent, Divider, Stack, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from "@mui/material";
 import { AppButton, AppTextField, AlertMessage } from "@/components/common";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -42,12 +42,21 @@ const ProfilePage = () => {
 
       <Card>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="overline" color="text.secondary" letterSpacing={1}>
-            Account Info
-          </Typography>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.5}>
+            <Typography variant="overline" color="text.secondary" letterSpacing={1}>
+              Account Info
+            </Typography>
+            {user?.is_staff && (
+              <Chip label="Admin" size="small" color="primary" />
+            )}
+          </Stack>
           <Box mt={1} mb={0.5}>
             <Typography variant="body2">
               <strong>Email:</strong> {user?.email}
+            </Typography>
+            <Typography variant="body2" mt={0.5}>
+              <strong>Role:</strong>{" "}
+              {user?.is_staff ? "Administrator" : "Customer"}
             </Typography>
             <Typography variant="body2" mt={0.5}>
               <strong>Member since:</strong>{" "}

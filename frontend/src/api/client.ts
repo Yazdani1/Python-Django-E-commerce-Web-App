@@ -52,4 +52,23 @@ export const apiClient = {
     request<T>({ method: "PATCH", url, data: body }),
 
   del: <T>(url: string) => request<T>({ method: "DELETE", url }),
+
+  postForm: <T>(url: string, formData: FormData) =>
+    request<T>({
+      method: "POST",
+      url,
+      data: formData,
+      // Let the browser set multipart boundary — delete Content-Type header
+      transformRequest: [(data) => data],
+      headers: { "Content-Type": undefined },
+    }),
+
+  patchForm: <T>(url: string, formData: FormData) =>
+    request<T>({
+      method: "PATCH",
+      url,
+      data: formData,
+      transformRequest: [(data) => data],
+      headers: { "Content-Type": undefined },
+    }),
 };

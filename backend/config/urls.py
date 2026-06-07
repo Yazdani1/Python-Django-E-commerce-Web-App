@@ -15,4 +15,5 @@ urlpatterns = [
     path(
         API_V1 + "categories/", include("apps.categories.urls", namespace="categories")
     ),
+    path(API_V1 + "products/", include("apps.products.urls", namespace="products")),
 ]

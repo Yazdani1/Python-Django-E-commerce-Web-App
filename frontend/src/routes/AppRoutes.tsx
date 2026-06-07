@@ -12,6 +12,7 @@ const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
 const ChangePasswordPage = lazy(() => import("@/pages/ChangePasswordPage"));
 const CategoriesPage = lazy(() => import("@/pages/CategoriesPage"));
+const ProductsPage = lazy(() => import("@/pages/ProductsPage"));
 
 const AppRoutes = () => (
   <Suspense fallback={<LoadingSpinner fullPage />}>
@@ -25,6 +26,7 @@ const AppRoutes = () => (
       <Route element={<ProtectedRoute />}>
         <Route element={<AuthLayout />}>
           <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+          <Route path={ROUTES.PRODUCTS} element={<ProductsPage />} />
           <Route path={ROUTES.CATEGORIES} element={<CategoriesPage />} />
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
           <Route path={ROUTES.CHANGE_PASSWORD} element={<ChangePasswordPage />} />

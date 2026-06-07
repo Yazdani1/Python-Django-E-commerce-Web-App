@@ -23,6 +23,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Dashboard as DashboardIcon,
+  Inventory2 as InventoryIcon,
   Lock as LockIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
@@ -36,6 +37,7 @@ const COLLAPSED_WIDTH = 64;
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: <DashboardIcon />, path: ROUTES.DASHBOARD },
+  { label: "Products", icon: <InventoryIcon />, path: ROUTES.PRODUCTS },
   { label: "Categories", icon: <CategoryIcon />, path: ROUTES.CATEGORIES },
   { label: "Profile", icon: <PersonIcon />, path: ROUTES.PROFILE },
   { label: "Change Password", icon: <LockIcon />, path: ROUTES.CHANGE_PASSWORD },

@@ -75,6 +75,32 @@ export interface CategoryPayload {
   is_active?: boolean;
 }
 
+// ── Product ─────────────────────────────────────────────────────────────────
+export interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  sku: string;
+  description: string;
+  price: string;
+  stock_quantity: number;
+  image_url: string | null;
+  category: Category | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductPayload {
+  name: string;
+  description?: string;
+  price: string;
+  stock_quantity?: number;
+  category?: number | null;
+  is_active?: boolean;
+  image?: File | null;
+}
+
 // ── Auth store state ────────────────────────────────────────────────────────
 export interface AuthState {
   user: User | null;

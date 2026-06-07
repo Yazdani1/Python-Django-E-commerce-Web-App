@@ -30,6 +30,8 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",  # enables logout via token blacklisting
     "corsheaders",
+    "cloudinary_storage",
+    "cloudinary",
 ]
 
 LOCAL_APPS = [
@@ -37,6 +39,7 @@ LOCAL_APPS = [
     "apps.users",
     "apps.authentication",
     "apps.categories",
+    "apps.products",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -113,6 +116,21 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# ── Cloudinary ────────────────────────────────────────────────────────────────
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME", default=""),
+    "API_KEY": config("CLOUDINARY_API_KEY", default=""),
+    "API_SECRET": config("CLOUDINARY_API_SECRET", default=""),
+}
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

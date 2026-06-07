@@ -1,6 +1,7 @@
 import { Box, Card, Chip, Grid, Typography } from "@mui/material";
 import {
   Category as CategoryIcon,
+  Inventory2 as InventoryIcon,
   Lock as LockIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
@@ -10,6 +11,7 @@ import { LoadingSpinner } from "@/components/common";
 import { ROUTES } from "@/constants";
 
 const quickLinks = [
+  { label: "Products", description: "Browse and manage the product catalogue.", to: ROUTES.PRODUCTS, icon: <InventoryIcon />, color: "warning.main" },
   { label: "Categories", description: "Browse and manage product categories.", to: ROUTES.CATEGORIES, icon: <CategoryIcon />, color: "primary.main" },
   { label: "My Profile", description: "Update your name and phone number.", to: ROUTES.PROFILE, icon: <PersonIcon />, color: "secondary.main" },
   { label: "Change Password", description: "Update your account password.", to: ROUTES.CHANGE_PASSWORD, icon: <LockIcon />, color: "success.main" },

@@ -8,6 +8,7 @@ export const ROUTES = {
   PROFILE: "/profile",
   CHANGE_PASSWORD: "/change-password",
   CATEGORIES: "/categories",
+  PRODUCTS: "/products",
 } as const;
 
 export const TOKEN_KEYS = {
