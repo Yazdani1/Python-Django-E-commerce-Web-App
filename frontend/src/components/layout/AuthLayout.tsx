@@ -24,6 +24,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Dashboard as DashboardIcon,
+  Home as HomeIcon,
   Inventory2 as InventoryIcon,
   ListAlt as OrdersIcon,
   Lock as LockIcon,
@@ -42,6 +43,7 @@ const COLLAPSED_WIDTH = 64;
 
 // Cart icon gets a badge — must be built dynamically inside the component
 const STATIC_NAV_ITEMS = [
+  { label: "Home", icon: <HomeIcon />, path: ROUTES.HOME },
   { label: "Dashboard", icon: <DashboardIcon />, path: ROUTES.DASHBOARD },
   { label: "Products", icon: <InventoryIcon />, path: ROUTES.PRODUCTS },
   { label: "Categories", icon: <CategoryIcon />, path: ROUTES.CATEGORIES },
@@ -109,8 +111,9 @@ export const AuthLayout = () => {
     fetchCart();
   }, [fetchCart]);
 
+  // Insert Cart between Categories (index 3) and My Orders (index 4)
   const NAV_ITEMS = [
-    ...STATIC_NAV_ITEMS.slice(0, 3),
+    ...STATIC_NAV_ITEMS.slice(0, 4),
     {
       label: "Cart",
       icon: (
@@ -120,7 +123,7 @@ export const AuthLayout = () => {
       ),
       path: ROUTES.CART,
     },
-    ...STATIC_NAV_ITEMS.slice(3),
+    ...STATIC_NAV_ITEMS.slice(4),
   ];
 
   const handleLogout = async () => {
