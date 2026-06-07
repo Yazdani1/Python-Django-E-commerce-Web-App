@@ -37,6 +37,26 @@ class Order(TimeStampedModel):
         return f"Order #{self.pk} — {self.user.email} ({self.status})"
 
 
+class OrderStatusHistory(models.Model):
+    """Immutable log of every status transition for an order."""
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="status_history",
+    )
+    status = models.CharField(max_length=20, choices=Order.Status.choices)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["changed_at"]
+        verbose_name = "Order Status History"
+        verbose_name_plural = "Order Status Histories"
+
+    def __str__(self) -> str:
+        return f"Order #{self.order_id} → {self.status} at {self.changed_at}"
+
+
 class OrderItem(TimeStampedModel):
     """
     Immutable snapshot of a product line at checkout time.

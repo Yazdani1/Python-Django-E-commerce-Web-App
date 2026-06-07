@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Order, OrderItem
+from .models import Order, OrderItem, OrderStatusHistory
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -22,9 +22,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return str(obj.line_total)
 
 
+class OrderStatusHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderStatusHistory
+        fields = ["status", "changed_at"]
+
+
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
+    status_history = OrderStatusHistorySerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
@@ -34,6 +41,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "status",
             "status_display",
             "items",
+            "status_history",
             "created_at",
         ]
         read_only_fields = ["total_amount", "created_at"]

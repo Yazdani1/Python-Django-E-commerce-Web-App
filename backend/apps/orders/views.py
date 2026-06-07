@@ -11,7 +11,7 @@ from apps.core.exceptions import AppError
 from apps.core.mixins import SuccessResponseMixin
 from apps.core.pagination import StandardResultsPagination
 
-from .models import Order, OrderItem
+from .models import Order, OrderItem, OrderStatusHistory
 from .serializers import OrderSerializer, UpdateOrderStatusSerializer
 
 
@@ -56,6 +56,9 @@ class CheckoutView(SuccessResponseMixin, APIView):
         total = Decimal("0.00")
         order = Order.objects.create(user=request.user, total_amount=total)
 
+        # Record initial PENDING status timestamp
+        OrderStatusHistory.objects.create(order=order, status=Order.Status.PENDING)
+
         order_items = []
         for item in items:
             order_items.append(
@@ -96,9 +99,11 @@ class OrderListView(SuccessResponseMixin, APIView):
 
     def get(self, request: Request) -> Response:
         if request.user.is_staff:
-            qs = Order.objects.prefetch_related("items").all()
+            qs = Order.objects.prefetch_related("items", "status_history").all()
         else:
-            qs = Order.objects.prefetch_related("items").filter(user=request.user)
+            qs = Order.objects.prefetch_related("items", "status_history").filter(
+                user=request.user
+            )
 
         paginator = StandardResultsPagination()
         page = paginator.paginate_queryset(qs, request)
@@ -115,9 +120,11 @@ class OrderDetailView(SuccessResponseMixin, APIView):
     def get(self, request: Request, order_id: int) -> Response:
         try:
             if request.user.is_staff:
-                order = Order.objects.prefetch_related("items").get(pk=order_id)
+                order = Order.objects.prefetch_related("items", "status_history").get(
+                    pk=order_id
+                )
             else:
-                order = Order.objects.prefetch_related("items").get(
+                order = Order.objects.prefetch_related("items", "status_history").get(
                     pk=order_id, user=request.user
                 )
         except Order.DoesNotExist:
@@ -132,13 +139,14 @@ class OrderStatusUpdateView(SuccessResponseMixin, APIView):
 
     def patch(self, request: Request, order_id: int) -> Response:
         try:
-            order = Order.objects.get(pk=order_id)
+            order = Order.objects.prefetch_related("status_history").get(pk=order_id)
         except Order.DoesNotExist:
             raise AppError("Order not found.", status.HTTP_404_NOT_FOUND)
         serializer = UpdateOrderStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         order.status = serializer.validated_data["status"]
         order.save(update_fields=["status"])
+        OrderStatusHistory.objects.create(order=order, status=order.status)
         return self.success_response(
             data=OrderSerializer(order).data,
             message="Order status updated.",

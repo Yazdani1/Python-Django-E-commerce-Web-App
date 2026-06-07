@@ -124,6 +124,11 @@ export interface AddToCartPayload {
 // ── Order ─────────────────────────────────────────────────────────────────────
 export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 
+export interface OrderStatusHistory {
+  status: OrderStatus;
+  changed_at: string;
+}
+
 export interface OrderItem {
   id: number;
   product: number | null;
@@ -140,6 +145,7 @@ export interface Order {
   status: OrderStatus;
   status_display: string;
   items: OrderItem[];
+  status_history: OrderStatusHistory[];
   created_at: string;
 }
 
