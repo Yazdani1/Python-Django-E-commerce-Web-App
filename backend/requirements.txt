@@ -1,0 +1,29 @@
+# ── Core Framework ────────────────────────────────────────────────────────────
+Django==5.2.2
+djangorestframework==3.16.0
+
+# ── Database ──────────────────────────────────────────────────────────────────
+psycopg2-binary==2.9.10          # PostgreSQL adapter
+
+# ── Authentication ────────────────────────────────────────────────────────────
+djangorestframework-simplejwt==5.5.0
+
+# ── CORS ──────────────────────────────────────────────────────────────────────
+django-cors-headers==4.7.0
+
+# ── Environment Variables ─────────────────────────────────────────────────────
+python-decouple==3.8             # reads .env file cleanly
+
+# ── Dev / Code Quality ────────────────────────────────────────────────────────
+black==25.1.0                    # formatter
+isort==6.0.1                     # import sorter
+flake8==7.2.0                    # linter
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest==8.4.0
+pytest-django==4.11.1
+factory-boy==3.3.3               # test data factories
+
+# ── Production (optional, uncomment when deploying) ───────────────────────────
+# gunicorn==23.0.0
+# whitenoise==6.9.0
