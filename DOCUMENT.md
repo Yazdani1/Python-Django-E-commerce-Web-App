@@ -360,4 +360,85 @@ Base URL: `/api/v1/`
 
 ---
 
+---
+
+## 9. Phase 3 — Category Management Module
+
+**Status:** Complete  
+**Completed:** 2026-06-07
+
+### Category model fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | BigAutoField | PK |
+| `name` | CharField(200) | unique |
+| `slug` | SlugField(220) | unique; auto-generated from name if omitted |
+| `description` | TextField | optional |
+| `is_active` | BooleanField | default True; inactive hidden from public |
+| `created_at` | DateTimeField | auto set on create |
+| `updated_at` | DateTimeField | auto set on save |
+
+### Backend API endpoints
+
+Base URL: `/api/v1/categories/`  
+Lookup: by **slug** (not pk) — e.g. `/api/v1/categories/electronics/`
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/categories/` | Public | Paginated list (active only for public; all for admin) |
+| `GET` | `/categories/{slug}/` | Public | Single category detail |
+| `POST` | `/categories/` | Admin | Create category (slug auto-generated if omitted) |
+| `PUT` | `/categories/{slug}/` | Admin | Full update |
+| `PATCH` | `/categories/{slug}/` | Admin | Partial update (slug preserved if not supplied) |
+| `DELETE` | `/categories/{slug}/` | Admin | Hard delete |
+
+### Serializer design
+
+Two serializers keep read and write separate:
+
+- **`CategoryReadSerializer`** — all fields read-only; returned to all callers including after every write operation.
+- **`CategoryWriteSerializer`** — admin input only; `slug` is optional and auto-derived from `name` on create; on PATCH without a new slug the existing slug is preserved.
+
+### Permission matrix
+
+| Action | Unauthenticated | Regular user | Admin (is_staff) |
+|---|---|---|---|
+| list / retrieve | 200 ✓ | 200 ✓ | 200 ✓ (sees inactive too) |
+| create | 401 | 403 | 201 ✓ |
+| update / partial update | 401 | 403 | 200 ✓ |
+| delete | 401 | 403 | 200 ✓ |
+
+### Request / Response shapes
+
+**POST `/categories/`**
+```json
+// Request (slug is optional)
+{ "name": "Electronics", "description": "All electronic products.", "is_active": true }
+
+// Response 201
+{
+  "success": true,
+  "message": "Category created successfully.",
+  "data": { "id": 1, "name": "Electronics", "slug": "electronics", ... }
+}
+```
+
+**GET `/categories/`** (paginated)
+```json
+{
+  "success": true,
+  "count": 12,
+  "next": "http://localhost:8000/api/v1/categories/?page=2",
+  "previous": null,
+  "results": [{ "id": 1, "name": "Electronics", "slug": "electronics", ... }]
+}
+```
+
+### Test coverage
+
+| File | Tests |
+|---|---|
+| `apps/categories/tests/test_category_api.py` | List (public, active-only filter, admin sees inactive, field check), Retrieve (public, 404, inactive hidden/visible), Create (success, auto-slug, custom slug, duplicate name, missing name, non-admin 403, unauth 401), Update (full, partial slug preserved, slug change, non-admin 403, unauth 401), Delete (success, non-admin 403, unauth 401, DB removal) |
+
 <!-- ── Add new phases below this line ─────────────────────────────────────── -->

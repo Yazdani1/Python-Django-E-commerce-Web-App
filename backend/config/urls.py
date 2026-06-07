@@ -12,4 +12,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path(API_V1 + "auth/", include("apps.authentication.urls", namespace="auth")),
     path(API_V1 + "users/", include("apps.users.urls", namespace="users")),
+    path(
+        API_V1 + "categories/", include("apps.categories.urls", namespace="categories")
+    ),
 ]
