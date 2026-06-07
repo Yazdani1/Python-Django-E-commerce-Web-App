@@ -17,6 +17,11 @@
 8. [Phase 2 — User Authentication Module](#8-phase-2--user-authentication-module)
 9. [Phase 3 — Category Management Module](#9-phase-3--category-management-module)
 10. [Phase 4 — Product Module](#10-phase-4--product-module)
+11. [Phase 5 — Product Search, Filter & Sort](#11-phase-5--product-search-filter--sort)
+12. [Phase 6 — Cart Module](#12-phase-6--cart-module)
+13. [Phase 7 — Order Module](#13-phase-7--order-module)
+14. [Phase 8 — Admin Dashboard Stats](#14-phase-8--admin-dashboard-stats)
+15. [Phase 9 — Frontend: Product Detail, Cart, Orders, Search](#15-phase-9--frontend-product-detail-cart-orders-search)
 
 ---
 
@@ -580,5 +585,176 @@ image=<file>        ← optional
 - `frontend/src/pages/DashboardPage.tsx` — added Products quick link
 - `frontend/src/pages/ProfilePage.tsx` — added role display + Admin chip
 - `frontend/src/routes/AppRoutes.tsx` — added `/products` route
+
+---
+
+## 11. Phase 5 — Product Search, Filter & Sort
+
+**Status:** Complete — **Completed:** 2026-06-07
+
+Product list endpoint now accepts:
+
+| Param | Example | Description |
+|---|---|---|
+| `search` | `?search=mouse` | Full-text search across `name` + `description` (SearchFilter) |
+| `category` | `?category=electronics` | Filter by category **slug** (DjangoFilterBackend) |
+| `min_price` | `?min_price=10` | Price ≥ value |
+| `max_price` | `?max_price=100` | Price ≤ value |
+| `ordering` | `?ordering=price` | Price asc; `-price` desc; `-created_at` newest |
+| `page_size` | `?page_size=10` | Items per page (default 10, max 50) |
+
+### Example requests
+
+```
+GET /api/v1/products/?search=wireless&category=electronics&max_price=150&ordering=-price
+GET /api/v1/products/?min_price=50&ordering=price&page=2
+GET /api/v1/products/{slug}/related/   → up to 4 same-category products
+```
+
+### New files / changes
+- `apps/products/filters.py` — `ProductFilter` (min_price, max_price, category slug)
+- `apps/products/views.py` — filter_backends, `related` action
+- `apps/core/pagination.py` — `ProductResultsPagination` (page_size=10)
+- `requirements.txt` — added `django-filter==24.3`
+- `config/settings/base.py` — added `django_filters` to INSTALLED_APPS
+
+---
+
+## 12. Phase 6 — Cart Module
+
+**Status:** Complete — **Completed:** 2026-06-07
+
+One cart per user (OneToOne). Cart is auto-created on first add.
+
+### API endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/cart/` | Bearer | Get current cart (creates if missing) |
+| `POST` | `/cart/` | Bearer | Add product; increments qty if already present |
+| `DELETE` | `/cart/` | Bearer | Clear all items |
+| `PATCH` | `/cart/items/{id}/` | Bearer | Update quantity |
+| `DELETE` | `/cart/items/{id}/` | Bearer | Remove single item |
+
+### Response shape
+
+```json
+{
+  "success": true, "message": "...", "data": {
+    "id": 1,
+    "items": [{ "id": 1, "product": {...}, "quantity": 2, "line_total": "79.98" }],
+    "total_items": 2,
+    "subtotal": "79.98"
+  }
+}
+```
+
+### Files created
+- `apps/cart/models.py`, `serializers.py`, `views.py`, `urls.py`, `admin.py`
+- `apps/cart/migrations/0001_initial.py`
+- `apps/core/exceptions.py` — added `AppError(message, status_code)` class
+
+---
+
+## 13. Phase 7 — Order Module
+
+**Status:** Complete — **Completed:** 2026-06-07
+
+### API endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/orders/checkout/` | Bearer | Atomic checkout: creates order, reduces stock, clears cart |
+| `GET` | `/orders/` | Bearer | List orders (own; admin sees all) |
+| `GET` | `/orders/{id}/` | Bearer | Retrieve single order |
+| `PATCH` | `/orders/{id}/status/` | Admin | Update order status |
+
+### Checkout transaction (atomic)
+
+1. Validate cart is not empty
+2. Validate each item has sufficient `stock_quantity`
+3. Create `Order` record
+4. `bulk_create` `OrderItem`s — copies `product_name`, `product_sku`, `unit_price` as a snapshot
+5. Reduce `stock_quantity` on each product via a targeted `.update()` (no race condition)
+6. Clear cart items
+
+### Status values
+
+`PENDING` → `PROCESSING` → `SHIPPED` → `DELIVERED` (or `CANCELLED`)
+
+### Files created
+- `apps/orders/models.py`, `serializers.py`, `views.py`, `urls.py`, `admin.py`
+- `apps/orders/migrations/0001_initial.py`
+
+---
+
+## 14. Phase 8 — Admin Dashboard Stats
+
+**Status:** Complete — **Completed:** 2026-06-07
+
+### API endpoint
+
+`GET /api/v1/admin/stats/` — Admin only
+
+```json
+{
+  "success": true, "data": {
+    "total_users": 120,
+    "total_products": 45,
+    "total_orders": 302,
+    "total_categories": 8,
+    "total_revenue": "18450.00",
+    "pending_orders": 12,
+    "active_carts": 34
+  }
+}
+```
+
+All values are single-query ORM aggregates (`COUNT`, `SUM`) — no N+1 queries.
+
+### Files created
+- `apps/dashboard/views.py`, `urls.py`, `apps.py`, `__init__.py`
+
+---
+
+## 15. Phase 9 — Frontend: Product Detail, Cart, Orders, Search
+
+**Status:** Complete — **Completed:** 2026-06-07
+
+### New routes
+
+| Route | Page | Auth |
+|---|---|---|
+| `/products/:slug` | `ProductDetailPage` | No |
+| `/cart` | `CartPage` | Yes |
+| `/orders` | `OrdersPage` | Yes |
+
+### Key features
+
+- **ProductDetailPage** — image, name, SKU, price, stock badge, qty selector, Add to Cart; related products grid below
+- **CartPage** — line items with qty editing, remove, order summary panel, Place Order → ConfirmModal → checkout
+- **OrdersPage** — collapsible order cards; admin can update status inline
+- **ProductsPage** — search bar, category filter, min/max price, sort dropdown — all debounced and synced to URL params
+- **HomePage** — real products from API (newest 8), skeleton loading, Add to Cart / Login to Buy
+- **DashboardPage** — admin stat cards (users, products, orders, revenue, pending, carts) above quick links
+- **Navbar** — auth-aware: logged-in shows Dashboard + Cart badge; logged-out shows Login + Register
+- **Sidebar** — fetches cart on mount; Cart nav item shows badge; cart cleared on logout
+
+### Bug fixes
+
+- **Page load flash**: moved Suspense boundary inside `AuthLayout` to only wrap the content area — sidebar no longer disappears during page transitions
+- **Navbar after login**: Navbar now reads `isAuthenticated` from auth store and shows Dashboard/Cart instead of Login/Register
+
+### Files created / changed
+
+- `pages/ProductDetailPage.tsx`, `pages/CartPage.tsx`, `pages/OrdersPage.tsx` — new
+- `pages/HomePage.tsx`, `pages/ProductsPage.tsx`, `pages/DashboardPage.tsx` — updated
+- `api/cartApi.ts`, `api/orderApi.ts`, `api/dashboardApi.ts`, `api/productApi.ts` — new / updated
+- `store/cartStore.ts` — new Zustand cart store
+- `components/layout/Navbar.tsx` — auth-aware, cart badge, search navigates to products
+- `components/layout/AuthLayout.tsx` — inner Suspense fix, cart fetch on mount, cart reset on logout
+- `routes/AppRoutes.tsx` — per-route Suspense, new routes wired
+- `types/index.ts` — Cart, CartItem, Order, OrderItem, AdminStats
+- `constants/index.ts` — ROUTES.CART, ROUTES.ORDERS, ROUTES.PRODUCT_DETAIL, `productDetailPath()`
 
 <!-- ── Add new phases below this line ─────────────────────────────────────── -->

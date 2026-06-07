@@ -16,4 +16,7 @@ urlpatterns = [
         API_V1 + "categories/", include("apps.categories.urls", namespace="categories")
     ),
     path(API_V1 + "products/", include("apps.products.urls", namespace="products")),
+    path(API_V1 + "cart/", include("apps.cart.urls", namespace="cart")),
+    path(API_V1 + "orders/", include("apps.orders.urls", namespace="orders")),
+    path(API_V1 + "admin/", include("apps.dashboard.urls", namespace="dashboard")),
 ]

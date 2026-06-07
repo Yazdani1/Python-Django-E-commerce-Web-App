@@ -101,6 +101,59 @@ export interface ProductPayload {
   image?: File | null;
 }
 
+// ── Cart ─────────────────────────────────────────────────────────────────────
+export interface CartItem {
+  id: number;
+  product: Product;
+  quantity: number;
+  line_total: string;
+}
+
+export interface Cart {
+  id: number;
+  items: CartItem[];
+  total_items: number;
+  subtotal: string;
+}
+
+export interface AddToCartPayload {
+  product_id: number;
+  quantity?: number;
+}
+
+// ── Order ─────────────────────────────────────────────────────────────────────
+export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+
+export interface OrderItem {
+  id: number;
+  product: number | null;
+  product_name: string;
+  product_sku: string;
+  unit_price: string;
+  quantity: number;
+  line_total: string;
+}
+
+export interface Order {
+  id: number;
+  total_amount: string;
+  status: OrderStatus;
+  status_display: string;
+  items: OrderItem[];
+  created_at: string;
+}
+
+// ── Admin Stats ───────────────────────────────────────────────────────────────
+export interface AdminStats {
+  total_users: number;
+  total_products: number;
+  total_orders: number;
+  total_categories: number;
+  total_revenue: string;
+  pending_orders: number;
+  active_carts: number;
+}
+
 // ── Auth store state ────────────────────────────────────────────────────────
 export interface AuthState {
   user: User | null;

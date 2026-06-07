@@ -9,7 +9,12 @@ export const ROUTES = {
   CHANGE_PASSWORD: "/change-password",
   CATEGORIES: "/categories",
   PRODUCTS: "/products",
+  PRODUCT_DETAIL: "/products/:slug",
+  CART: "/cart",
+  ORDERS: "/orders",
 } as const;
+
+export const productDetailPath = (slug: string) => `/products/${slug}`;
 
 export const TOKEN_KEYS = {
   ACCESS: "access_token",

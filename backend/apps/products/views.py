@@ -1,11 +1,17 @@
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.core.mixins import SuccessResponseMixin
+from django_filters.rest_framework import DjangoFilterBackend
 
+from apps.core.mixins import SuccessResponseMixin
+from apps.core.pagination import ProductResultsPagination
+
+from .filters import ProductFilter
 from .models import Product
 from .serializers import ProductReadSerializer, ProductWriteSerializer
 
@@ -17,16 +23,27 @@ class ProductViewSet(SuccessResponseMixin, viewsets.ModelViewSet):
     partial_update,
     destroy          — admin only (IsAdminUser)
 
-    Admins see all products; public callers see only active ones.
-    lookup_field = "slug" so URLs are /products/<slug>/ not /products/<pk>/.
-    Images are accepted as multipart uploads.
+    Search:  ?search=keyword          (name, description)
+    Filter:  ?category=electronics    (category slug)
+             ?min_price=10&max_price=100
+    Sort:    ?ordering=price           (ascending)
+             ?ordering=-price          (descending)
+             ?ordering=-created_at     (newest)
+    Page:    ?page=2&page_size=10
     """
 
     lookup_field = "slug"
     parser_classes = [MultiPartParser, FormParser]
+    pagination_class = ProductResultsPagination
+
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ProductFilter
+    search_fields = ["name", "description"]
+    ordering_fields = ["price", "created_at", "name"]
+    ordering = ["name"]
 
     def get_permissions(self):
-        if self.action in ("list", "retrieve"):
+        if self.action in ("list", "retrieve", "related"):
             return [AllowAny()]
         return [IsAdminUser()]
 
@@ -54,6 +71,18 @@ class ProductViewSet(SuccessResponseMixin, viewsets.ModelViewSet):
     def retrieve(self, request: Request, *args, **kwargs) -> Response:
         instance = self.get_object()
         serializer = ProductReadSerializer(instance, context={"request": request})
+        return self.success_response(data=serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="related")
+    def related(self, request: Request, slug: str = None) -> Response:
+        """Return up to 4 active products in the same category, excluding this product."""
+        instance = self.get_object()
+        qs = (
+            Product.objects.select_related("category")
+            .filter(is_active=True, category=instance.category)
+            .exclude(pk=instance.pk)[:4]
+        )
+        serializer = ProductReadSerializer(qs, many=True, context={"request": request})
         return self.success_response(data=serializer.data)
 
     # ── Write ─────────────────────────────────────────────────────────────────

@@ -26,6 +26,25 @@ class StandardResultsPagination(PageNumberPagination):
         )
 
 
+class ProductResultsPagination(PageNumberPagination):
+    """Products: 10 per page, client can override up to 50."""
+
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 50
+
+    def get_paginated_response(self, data: list) -> Response:
+        return Response(
+            {
+                "success": True,
+                "count": self.page.paginator.count,
+                "next": self.get_next_link(),
+                "previous": self.get_previous_link(),
+                "results": data,
+            }
+        )
+
+
 class LargeResultsPagination(PageNumberPagination):
     """For admin/export endpoints that need larger pages."""
 

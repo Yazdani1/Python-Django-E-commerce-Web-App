@@ -30,6 +30,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",  # enables logout via token blacklisting
     "corsheaders",
+    "django_filters",
     "cloudinary_storage",
     "cloudinary",
 ]
@@ -40,6 +41,9 @@ LOCAL_APPS = [
     "apps.authentication",
     "apps.categories",
     "apps.products",
+    "apps.cart",
+    "apps.orders",
+    "apps.dashboard",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

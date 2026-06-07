@@ -1,6 +1,16 @@
 import { apiClient } from "./client";
 import type { ApiResult, PaginatedResponse, Product, ProductPayload } from "@/types";
 
+export interface ProductListParams {
+  search?: string;
+  category?: string;
+  min_price?: number;
+  max_price?: number;
+  ordering?: "price" | "-price" | "-created_at" | "name";
+  page?: number;
+  page_size?: number;
+}
+
 function toFormData(payload: ProductPayload): FormData {
   const fd = new FormData();
   fd.append("name", payload.name);
@@ -17,11 +27,14 @@ function toFormData(payload: ProductPayload): FormData {
 }
 
 export const productApi = {
-  list: (params?: Record<string, unknown>): Promise<ApiResult<PaginatedResponse<Product>>> =>
-    apiClient.getPaginated<Product>("/products/", params),
+  list: (params?: ProductListParams): Promise<ApiResult<PaginatedResponse<Product>>> =>
+    apiClient.getPaginated<Product>("/products/", params as Record<string, unknown>),
 
   retrieve: (slug: string): Promise<ApiResult<Product>> =>
     apiClient.get<Product>(`/products/${slug}/`),
+
+  related: (slug: string): Promise<ApiResult<Product[]>> =>
+    apiClient.get<Product[]>(`/products/${slug}/related/`),
 
   create: (payload: ProductPayload): Promise<ApiResult<Product>> =>
     apiClient.postForm<Product>("/products/", toFormData(payload)),

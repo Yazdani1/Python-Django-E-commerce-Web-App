@@ -11,6 +11,9 @@ djangorestframework-simplejwt==5.5.0
 # ── CORS ──────────────────────────────────────────────────────────────────────
 django-cors-headers==4.7.0
 
+# ── Filtering ─────────────────────────────────────────────────────────────────
+django-filter==24.3                # query-param filtering for DRF
+
 # ── Environment Variables ─────────────────────────────────────────────────────
 python-decouple==3.8             # reads .env file cleanly
 

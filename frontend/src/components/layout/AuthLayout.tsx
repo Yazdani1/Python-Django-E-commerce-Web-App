@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Link as RouterLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Avatar,
@@ -19,26 +19,33 @@ import {
   MenuItem,
 } from "@mui/material";
 import {
+  Badge,
   Category as CategoryIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Dashboard as DashboardIcon,
   Inventory2 as InventoryIcon,
+  ListAlt as OrdersIcon,
   Lock as LockIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
   ShoppingBag as ShoppingBagIcon,
+  ShoppingCart as CartIcon,
 } from "@mui/icons-material";
 import { useAuth } from "@/hooks/useAuth";
+import { LoadingSpinner } from "@/components/common";
+import { useCartStore } from "@/store/cartStore";
 import { APP_NAME, ROUTES } from "@/constants";
 
 const EXPANDED_WIDTH = 240;
 const COLLAPSED_WIDTH = 64;
 
-const NAV_ITEMS = [
+// Cart icon gets a badge — must be built dynamically inside the component
+const STATIC_NAV_ITEMS = [
   { label: "Dashboard", icon: <DashboardIcon />, path: ROUTES.DASHBOARD },
   { label: "Products", icon: <InventoryIcon />, path: ROUTES.PRODUCTS },
   { label: "Categories", icon: <CategoryIcon />, path: ROUTES.CATEGORIES },
+  { label: "My Orders", icon: <OrdersIcon />, path: ROUTES.ORDERS },
   { label: "Profile", icon: <PersonIcon />, path: ROUTES.PROFILE },
   { label: "Change Password", icon: <LockIcon />, path: ROUTES.CHANGE_PASSWORD },
 ];
@@ -96,9 +103,29 @@ export const AuthLayout = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { totalItems, fetchCart, resetCart } = useCartStore();
+
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
+
+  const NAV_ITEMS = [
+    ...STATIC_NAV_ITEMS.slice(0, 3),
+    {
+      label: "Cart",
+      icon: (
+        <Badge badgeContent={totalItems} color="primary" max={99}>
+          <CartIcon />
+        </Badge>
+      ),
+      path: ROUTES.CART,
+    },
+    ...STATIC_NAV_ITEMS.slice(3),
+  ];
 
   const handleLogout = async () => {
     setAnchorEl(null);
+    resetCart();
     await logout();
     navigate(ROUTES.LOGIN);
   };
@@ -266,9 +293,12 @@ export const AuthLayout = () => {
           </MenuItem>
         </Menu>
 
-        {/* Page content */}
+        {/* Page content — Suspense here so only the content area shows a spinner,
+            not the entire layout including the sidebar */}
         <Box component="main" sx={{ flex: 1, p: 3, overflow: "auto" }}>
-          <Outlet />
+          <Suspense fallback={<LoadingSpinner message="Loading…" />}>
+            <Outlet />
+          </Suspense>
         </Box>
       </Box>
     </Box>
