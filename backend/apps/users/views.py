@@ -40,9 +40,7 @@ class MeView(SuccessResponseMixin, APIView):
         return self.success_response(data=UserReadSerializer(request.user).data)
 
     def patch(self, request: Request) -> None:
-        serializer = UserUpdateSerializer(
-            request.user, data=request.data, partial=True
-        )
+        serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return self.success_response(

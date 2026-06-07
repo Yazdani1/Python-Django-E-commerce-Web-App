@@ -3,8 +3,6 @@ production.py — Production-only settings.
 Set DJANGO_SETTINGS_MODULE=config.settings.production
 """
 
-from decouple import config
-
 from .base import *  # noqa: F401, F403
 
 DEBUG = False
@@ -12,7 +10,7 @@ DEBUG = False
 # ── Security Headers ──────────────────────────────────────────────────────────
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_HSTS_SECONDS = 31536000          # 1 year
+SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_SSL_REDIRECT = True
@@ -31,7 +29,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "json": {
-            "format": '{"level":"%(levelname)s","time":"%(asctime)s","module":"%(module)s","message":"%(message)s"}',
+            "format": '{"level":"%(levelname)s","time":"%(asctime)s","module":"%(module)s","message":"%(message)s"}',  # noqa: E501
         },
     },
     "handlers": {

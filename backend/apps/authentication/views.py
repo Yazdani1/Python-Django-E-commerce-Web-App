@@ -4,6 +4,7 @@ Thin wrappers around simplejwt — no business logic here.
 """
 
 from django.contrib.auth import authenticate
+
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request

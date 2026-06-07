@@ -3,10 +3,11 @@ Authentication API tests — login, refresh, logout.
 Every endpoint has: happy path, auth/permission check, validation error path.
 """
 
-import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+
+import pytest
 
 from apps.users.tests.factories import UserFactory
 
@@ -75,9 +76,7 @@ class TestLoginView:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_login_missing_password(self, api_client: APIClient, user) -> None:
-        response = api_client.post(
-            self.url, {"email": user.email}, format="json"
-        )
+        response = api_client.post(self.url, {"email": user.email}, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -127,7 +126,5 @@ class TestLogoutView:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_logout_unauthenticated(self, api_client: APIClient) -> None:
-        response = api_client.post(
-            self.url, {"refresh": "any-token"}, format="json"
-        )
+        response = api_client.post(self.url, {"refresh": "any-token"}, format="json")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED

@@ -3,9 +3,10 @@ User API tests — register, profile, change-password.
 Every endpoint has: happy path, auth/permission check, validation error path.
 """
 
-import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
+
+import pytest
 
 from apps.users.tests.factories import UserFactory
 
@@ -95,16 +96,12 @@ class TestMeView:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_update_profile_success(self, auth_client: APIClient) -> None:
-        response = auth_client.patch(
-            self.url, {"first_name": "Updated"}, format="json"
-        )
+        response = auth_client.patch(self.url, {"first_name": "Updated"}, format="json")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["data"]["first_name"] == "Updated"
 
     def test_update_profile_unauthenticated(self, api_client: APIClient) -> None:
-        response = api_client.patch(
-            self.url, {"first_name": "Updated"}, format="json"
-        )
+        response = api_client.patch(self.url, {"first_name": "Updated"}, format="json")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 

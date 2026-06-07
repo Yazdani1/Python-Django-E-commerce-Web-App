@@ -3,7 +3,11 @@ Custom User model — always define this before the first migration.
 Uses email as the primary login identifier instead of username.
 """
 
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
 
 from apps.core.models import TimeStampedModel
