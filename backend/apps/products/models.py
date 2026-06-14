@@ -42,3 +42,21 @@ class Product(TimeStampedModel):
         if not self.sku:
             self.sku = _generate_sku()
         super().save(*args, **kwargs)
+
+
+class ProductImage(TimeStampedModel):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+    image = models.ImageField(upload_to="products/gallery/")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "created_at"]
+        verbose_name = "Product Image"
+        verbose_name_plural = "Product Images"
+
+    def __str__(self) -> str:
+        return f"Image #{self.order} for {self.product.name}"

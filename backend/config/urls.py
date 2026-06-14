@@ -3,6 +3,8 @@ Root URL configuration.
 All app-level URLs are namespaced and mounted here.
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
@@ -18,5 +20,6 @@ urlpatterns = [
     path(API_V1 + "products/", include("apps.products.urls", namespace="products")),
     path(API_V1 + "cart/", include("apps.cart.urls", namespace="cart")),
     path(API_V1 + "orders/", include("apps.orders.urls", namespace="orders")),
+    path(API_V1 + "banners/", include("apps.banners.urls", namespace="banners")),
     path(API_V1 + "admin/", include("apps.dashboard.urls", namespace="dashboard")),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { Box, Card, Chip, Divider, Grid, Skeleton, Typography } from "@mui/material";
+import { Box, Button, Card, Chip, Divider, Grid, Skeleton, Typography } from "@mui/material";
 import {
   AttachMoney as RevenueIcon,
   Category as CategoryIcon,
+  Collections as BannersIcon,
   Inventory2 as InventoryIcon,
   ListAlt as OrdersIcon,
   Lock as LockIcon,
@@ -14,6 +15,7 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingSpinner } from "@/components/common";
+import { BannerManageModal } from "@/components/layout/BannerManageModal";
 import { dashboardApi } from "@/api/dashboardApi";
 import { useApi } from "@/hooks/useApi";
 import { ROUTES } from "@/constants";
@@ -66,6 +68,7 @@ const StatCard = ({ label, value, icon, color }: StatCardProps) => (
 const DashboardPage = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
 
   const { execute: fetchStats, isLoading: statsLoading } = useApi(
     useCallback(() => dashboardApi.getStats(), [])
@@ -133,9 +136,26 @@ const DashboardPage = () => {
               </Grid>
             </Grid>
           ) : null}
+          {/* Admin tools */}
+          <Box mb={3} display="flex" gap={2} flexWrap="wrap">
+            <Button
+              variant="outlined"
+              startIcon={<BannersIcon />}
+              onClick={() => setBannerModalOpen(true)}
+              sx={{ borderRadius: 2, fontWeight: 600 }}
+            >
+              Manage Hero Banners
+            </Button>
+          </Box>
+
           <Divider sx={{ mb: 4 }} />
         </>
       )}
+
+      <BannerManageModal
+        open={bannerModalOpen}
+        onClose={() => setBannerModalOpen(false)}
+      />
 
       <Typography variant="h6" fontWeight={600} mb={2}>
         Quick Access

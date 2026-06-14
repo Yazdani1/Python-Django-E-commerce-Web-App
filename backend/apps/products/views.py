@@ -1,6 +1,7 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.request import Request
@@ -12,16 +13,20 @@ from apps.core.mixins import SuccessResponseMixin
 from apps.core.pagination import ProductResultsPagination
 
 from .filters import ProductFilter
-from .models import Product
-from .serializers import ProductReadSerializer, ProductWriteSerializer
+from .models import Product, ProductImage
+from .serializers import (
+    ProductImageSerializer,
+    ProductImageWriteSerializer,
+    ProductReadSerializer,
+    ProductWriteSerializer,
+)
 
 
 class ProductViewSet(SuccessResponseMixin, viewsets.ModelViewSet):
     """
-    list, retrieve   — public (AllowAny)
-    create, update,
-    partial_update,
-    destroy          — admin only (IsAdminUser)
+    list, retrieve, related — public (AllowAny)
+    create, update, partial_update, destroy,
+    add_image, remove_image               — admin only (IsAdminUser)
 
     Search:  ?search=keyword          (name, description)
     Filter:  ?category=electronics    (category slug)
@@ -54,8 +59,12 @@ class ProductViewSet(SuccessResponseMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         if getattr(self.request.user, "is_staff", False):
-            return Product.objects.select_related("category").all()
-        return Product.objects.select_related("category").filter(is_active=True)
+            return Product.objects.select_related("category").prefetch_related("images").all()
+        return (
+            Product.objects.select_related("category")
+            .prefetch_related("images")
+            .filter(is_active=True)
+        )
 
     # ── Read ──────────────────────────────────────────────────────────────────
 
@@ -79,6 +88,7 @@ class ProductViewSet(SuccessResponseMixin, viewsets.ModelViewSet):
         instance = self.get_object()
         qs = (
             Product.objects.select_related("category")
+            .prefetch_related("images")
             .filter(is_active=True, category=instance.category)
             .exclude(pk=instance.pk)[:4]
         )
@@ -112,3 +122,35 @@ class ProductViewSet(SuccessResponseMixin, viewsets.ModelViewSet):
         instance = self.get_object()
         instance.delete()
         return self.success_response(message="Product deleted successfully.")
+
+    # ── Image Gallery ─────────────────────────────────────────────────────────
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="images",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def add_image(self, request: Request, slug: str = None) -> Response:
+        """Upload an additional gallery image for this product."""
+        instance = self.get_object()
+        serializer = ProductImageWriteSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        img = serializer.save(product=instance)
+        return self.success_response(
+            data=ProductImageSerializer(img, context={"request": request}).data,
+            message="Image added.",
+            status_code=status.HTTP_201_CREATED,
+        )
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path=r"images/(?P<img_pk>[^/.]+)",
+    )
+    def remove_image(self, request: Request, slug: str = None, img_pk: str = None) -> Response:
+        """Delete a specific gallery image from this product."""
+        instance = self.get_object()
+        img = get_object_or_404(ProductImage, pk=img_pk, product=instance)
+        img.delete()
+        return self.success_response(message="Image removed.")

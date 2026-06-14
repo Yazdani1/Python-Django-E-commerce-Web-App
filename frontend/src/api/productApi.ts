@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { ApiResult, PaginatedResponse, Product, ProductPayload } from "@/types";
+import type { ApiResult, PaginatedResponse, Product, ProductImage, ProductPayload } from "@/types";
 
 export interface ProductListParams {
   search?: string;
@@ -44,4 +44,14 @@ export const productApi = {
 
   remove: (slug: string): Promise<ApiResult<null>> =>
     apiClient.del<null>(`/products/${slug}/`),
+
+  addImage: (slug: string, file: File, order?: number): Promise<ApiResult<ProductImage>> => {
+    const fd = new FormData();
+    fd.append("image", file);
+    if (order !== undefined) fd.append("order", String(order));
+    return apiClient.postForm<ProductImage>(`/products/${slug}/images/`, fd);
+  },
+
+  removeImage: (slug: string, imageId: number): Promise<ApiResult<null>> =>
+    apiClient.del<null>(`/products/${slug}/images/${imageId}/`),
 };

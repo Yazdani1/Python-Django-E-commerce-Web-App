@@ -757,4 +757,48 @@ All values are single-query ORM aggregates (`COUNT`, `SUM`) — no N+1 queries.
 - `types/index.ts` — Cart, CartItem, Order, OrderItem, AdminStats
 - `constants/index.ts` — ROUTES.CART, ROUTES.ORDERS, ROUTES.PRODUCT_DETAIL, `productDetailPath()`
 
+---
+
+## Phase 10 — Multiple Product Images, Hero Slider & Premium UI Redesign
+
+### What was built
+
+#### Backend
+
+**ProductImage model** (`apps/products/models.py`)
+- New `ProductImage` model: FK to Product, `ImageField(upload_to="products/gallery/")`, `order` (PositiveIntegerField)
+- Ordered by `order, created_at`
+
+**Banner app** (`apps/banners/`)
+- New `Banner` model: `title`, `subtitle`, `image (upload_to="banners/")`, `link_url`, `order`, `is_active`
+- Public read (list/retrieve), admin write (create/update/delete)
+
+**API endpoints**
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/v1/banners/` | Public | List active banners (ordered) |
+| `POST` | `/api/v1/banners/` | Admin | Create banner (multipart) |
+| `PATCH` | `/api/v1/banners/{id}/` | Admin | Update banner |
+| `DELETE` | `/api/v1/banners/{id}/` | Admin | Delete banner |
+| `POST` | `/api/v1/products/{slug}/images/` | Admin | Add gallery image to product |
+| `DELETE` | `/api/v1/products/{slug}/images/{id}/` | Admin | Remove gallery image |
+
+**Updated ProductReadSerializer** now includes `images: ProductImageSerializer[]` in the response.
+
+#### Frontend
+
+**New / updated files:**
+- `api/bannerApi.ts` — CRUD for banners (multipart)
+- `api/productApi.ts` — `addImage`, `removeImage` endpoints
+- `types/index.ts` — `ProductImage`, `Banner`, `BannerPayload`; `Product.images` field added
+- `components/layout/HeroSlider.tsx` — Auto-playing image slider; falls back to gradient if no banners; prev/next arrows, dot indicators, 5 s auto-advance; pauses on hover
+- `components/layout/BannerManageModal.tsx` — Admin modal: lists existing banners with delete, form to add new ones
+- `components/products/ProductFormModal.tsx` — Now supports primary image + multiple gallery images (add/remove previews; uploads and deletes on save)
+- `pages/HomePage.tsx` — Full redesign: HeroSlider, search bar, trust badges, category grid (gradient tiles), featured products (premium cards with star ratings), promo CTA banner, stats section, full footer with links/newsletter/socials
+- `pages/ProductDetailPage.tsx` — Full redesign: `ImageGallery` sub-component with thumbnail strip and prev/next navigation; star rating display; trust badges (shipping, security, returns); related products redesigned
+- `pages/DashboardPage.tsx` — Admin "Manage Hero Banners" button opens BannerManageModal
+- `constants/theme.ts` — Inter font, gradient primary buttons, improved card/chip styles
+- `index.html` — Inter font from Google Fonts
+
 <!-- ── Add new phases below this line ─────────────────────────────────────── -->

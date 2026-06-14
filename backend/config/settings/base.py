@@ -41,6 +41,7 @@ LOCAL_APPS = [
     "apps.authentication",
     "apps.categories",
     "apps.products",
+    "apps.banners",
     "apps.cart",
     "apps.orders",
     "apps.dashboard",

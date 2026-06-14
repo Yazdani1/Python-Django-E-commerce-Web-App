@@ -7,6 +7,16 @@ from .base import *  # noqa: F401, F403
 
 DEBUG = True
 
+# Use local filesystem storage in development instead of Cloudinary
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 # Allow browsable API renderer in dev
 REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = (  # noqa: F405
     "rest_framework.renderers.JSONRenderer",

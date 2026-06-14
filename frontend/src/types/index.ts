@@ -76,6 +76,12 @@ export interface CategoryPayload {
 }
 
 // ── Product ─────────────────────────────────────────────────────────────────
+export interface ProductImage {
+  id: number;
+  image_url: string;
+  order: number;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -85,6 +91,7 @@ export interface Product {
   price: string;
   stock_quantity: number;
   image_url: string | null;
+  images: ProductImage[];
   category: Category | null;
   is_active: boolean;
   created_at: string;
@@ -99,6 +106,27 @@ export interface ProductPayload {
   category?: number | null;
   is_active?: boolean;
   image?: File | null;
+}
+
+// ── Banner ────────────────────────────────────────────────────────────────────
+export interface Banner {
+  id: number;
+  title: string;
+  subtitle: string;
+  image_url: string;
+  link_url: string;
+  order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface BannerPayload {
+  title: string;
+  subtitle?: string;
+  image: File;
+  link_url?: string;
+  order?: number;
+  is_active?: boolean;
 }
 
 // ── Cart ─────────────────────────────────────────────────────────────────────
