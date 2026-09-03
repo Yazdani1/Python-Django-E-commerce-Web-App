@@ -191,7 +191,6 @@ export const ProductFormModal: FC<ProductFormModalProps> = ({
 					value={form.name}
 					onChange={handleChange('name')}
 				/>
-
 				<AppTextField
 					label='Description'
 					multiline
@@ -199,7 +198,6 @@ export const ProductFormModal: FC<ProductFormModalProps> = ({
 					value={form.description}
 					onChange={handleChange('description')}
 				/>
-
 				<Stack direction='row' spacing={2}>
 					<AppTextField
 						label='Price'
@@ -217,7 +215,6 @@ export const ProductFormModal: FC<ProductFormModalProps> = ({
 						onChange={handleChange('stock_quantity')}
 					/>
 				</Stack>
-
 				<Box>
 					<InputLabel shrink sx={{ mb: 0.5, fontSize: 13 }}>
 						Category
