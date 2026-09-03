@@ -198,6 +198,7 @@ export const ProductFormModal: FC<ProductFormModalProps> = ({
 					value={form.description}
 					onChange={handleChange('description')}
 				/>
+
 				<Stack direction='row' spacing={2}>
 					<AppTextField
 						label='Price'
@@ -215,6 +216,7 @@ export const ProductFormModal: FC<ProductFormModalProps> = ({
 						onChange={handleChange('stock_quantity')}
 					/>
 				</Stack>
+
 				<Box>
 					<InputLabel shrink sx={{ mb: 0.5, fontSize: 13 }}>
 						Category
@@ -242,7 +244,7 @@ export const ProductFormModal: FC<ProductFormModalProps> = ({
 					</Select>
 				</Box>
 
-				{/* Primary image */}
+				{/* Primary image *******/}
 				<Box>
 					<InputLabel shrink sx={{ mb: 0.5, fontSize: 13 }}>
 						Primary Image
