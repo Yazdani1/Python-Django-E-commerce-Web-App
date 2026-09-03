@@ -66,6 +66,7 @@ export const SkuLabelModal: FC<SkuLabelModalProps> = ({
 							{product.name}
 						</Typography>
 					</Box>
+
 					<Box>
 						<Typography
 							variant='caption'
@@ -75,6 +76,7 @@ export const SkuLabelModal: FC<SkuLabelModalProps> = ({
 						>
 							SKU
 						</Typography>
+
 						<Typography
 							variant='body2'
 							fontWeight={700}
@@ -85,6 +87,7 @@ export const SkuLabelModal: FC<SkuLabelModalProps> = ({
 							{product.sku}
 						</Typography>
 					</Box>
+
 					<Box>
 						<Typography
 							variant='caption'
@@ -94,12 +97,13 @@ export const SkuLabelModal: FC<SkuLabelModalProps> = ({
 						>
 							Stock
 						</Typography>
+
 						<Typography variant='body2' fontWeight={600}>
 							{product.stock_quantity}
 						</Typography>
 					</Box>
 				</Stack>
-				{/* Label count input */}
+				{/* Label count input ***/}
 				<TextField
 					label='Number of labels to print'
 					type='number'
