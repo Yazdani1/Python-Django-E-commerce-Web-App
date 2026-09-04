@@ -103,9 +103,7 @@ export const OrderStatusStepper: FC<OrderStatusStepperProps> = ({
 						)}
 					</Typography>
 				</Stack>
-
 				{/* Show completed steps before cancellation, rest greyed */}
-
 				<Box sx={{ opacity: 0.45 }}>
 					<Stepper alternativeLabel connector={<GreenConnector />}>
 						{FLOW_STEPS.map((step) => (

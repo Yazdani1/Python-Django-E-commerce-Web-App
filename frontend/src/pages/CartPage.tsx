@@ -36,14 +36,21 @@ const CartPage = () => {
     fetchCart();
   }, [fetchCart]);
 
+  // to handle quantiy change.
+
   const handleQtyChange = async (item: CartItem, newQty: number) => {
     if (newQty < 1) return;
     await updateItem(item.id, newQty);
   };
 
+  // to remove items from cart
+
   const handleRemove = async (item: CartItem) => {
     await removeItem(item.id);
   };
+
+
+// check out function
 
   const handleCheckout = async () => {
     setCheckoutError(null);
@@ -137,6 +144,7 @@ const CartPage = () => {
                       <Typography variant="body2" fontWeight={600} sx={{ minWidth: 72, textAlign: "right" }}>
                         ${Number(item.line_total).toFixed(2)}
                       </Typography>
+                      
                       <IconButton
                         size="small"
                         color="error"
@@ -144,6 +152,7 @@ const CartPage = () => {
                       >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
+
                     </Stack>
                   </Stack>
                   {idx < items.length - 1 && <Divider />}
